@@ -9,11 +9,14 @@ before_script:
   #- cd deps
   #- git clone https://$BUILD_TOKEN_NAME:$BUILD_TOKEN_VALUE@someplace
   #- cd ..
+  - cd test
 
 default:
   script:
-    - julia --project test/setup_CI.jl
-    - julia --project test/run_tests.jl
+    # - julia --project test/setup_CI.jl
+    # - julia --project test/run_tests.jl
+    - julia --project setup_CI.jl
+    - julia --project run_tests.jl
 
 # pages:
 #   stage: deploy
