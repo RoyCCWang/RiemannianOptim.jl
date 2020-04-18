@@ -4,12 +4,7 @@ import Pkg
 Pkg.instantiate()
 
 using Test
-import LinearAlgebra
-import Statistics
-import Printf
-
-import ForwardDiff
-import RiemannianOptim
+using LinearAlgebra
 
 tests = [   "test1_with_Hessian";
             "test1_without_Hessian"]
