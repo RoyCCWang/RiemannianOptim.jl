@@ -5,6 +5,7 @@ import Statistics
 import Printf
 
 import ForwardDiff
+import Optim
 
 
 include("../src/declarations.jl")

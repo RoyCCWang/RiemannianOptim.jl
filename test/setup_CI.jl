@@ -4,6 +4,7 @@ import Pkg
 
 Pkg.add("SpecialFunctions")
 Pkg.add("BSON")
+Pkg.add("Optim")
 Pkg.build()
 
 
