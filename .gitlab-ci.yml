@@ -12,7 +12,7 @@ before_script:
 
 default:
   script:
-    #- julia --project test/setup_CI.jl
+    - julia --project test/setup_CI.jl
     - julia --project test/run_tests.jl
 
 # pages:
