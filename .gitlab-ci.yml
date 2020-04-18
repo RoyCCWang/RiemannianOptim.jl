@@ -1,0 +1,28 @@
+image: julia:1.4                # image comes from Docker hub
+
+
+before_script:
+
+  # grab all the private dependencies into a local folder before building.
+  #- apt-get -qq update; apt-get -y install git
+  #- mkdir deps
+  #- cd deps
+  #- git clone https://$BUILD_TOKEN_NAME:$BUILD_TOKEN_VALUE@someplace
+  #- cd ..
+
+default:
+  script:
+    #- julia --project test/setup_CI.jl
+    - julia --project test/run_tests.jl
+
+# pages:
+#   stage: deploy
+#   script:
+#     - julia --project=docs -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path=pwd()))'
+#     - julia --project=docs --color=yes docs/make.jl
+#     - mv docs/build public # move to the directory picked up by Gitlab pages
+#   artifacts:
+#     paths:
+#       - public
+#   only:
+#   - master
