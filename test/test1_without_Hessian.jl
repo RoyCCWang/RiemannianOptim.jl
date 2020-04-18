@@ -1,7 +1,7 @@
 # based on optim.jl
 
 import Random
-import RiemannianOptim
+using RiemannianOptim
 using Test
 
 # import Pkg
