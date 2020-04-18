@@ -69,8 +69,8 @@ function engineRp( f::Function,
     Y = copy(X_template)
 
     # allocate trace storage for output objects.
-    f_x_array = zeros(max_iter)
-    norm_df_array = zeros(max_iter)
+    f_x_array = zeros(config.max_iter)
+    norm_df_array = zeros(config.max_iter)
 
     # allocate trace storage for internal objects.
     abs_Δf_history = Vector{T}(undef,config.avg_Δf_window)
