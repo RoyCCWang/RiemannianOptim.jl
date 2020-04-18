@@ -1,17 +1,12 @@
 # based on optim.jl
 
 import Random
-import Printf
 
-import Statistics
-import SpecialFunctions
+import Pkg; Pkg.add("SpecialFunctions")
 
-import ForwardDiff
 import RiemannianOptim
 
-using LinearAlgebra
-
-import BSON
+import Pkg; Pkg.add("BSON")
 
 using Test
 #
