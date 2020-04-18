@@ -54,7 +54,7 @@ function engineRp( f::Function,
     # xx and vv here are vectors (i.e. in coordinate-form).
     g_x = one(T)
     𝐻 = (vv,xx)->(H*(g_x*LinearAlgebra.I))*vv
-    if !LinearAlgebra.isposdef(H)
+    if !isposdef(H)
         # Approximate Hessian. H(x)v = 1/r * (∇f(x+rv) - ∇f(x)) + BigO(r).
         𝑟 = convert(T, 1e-2)
         𝐻 = (vv,xx)->( (df♯(xx + 𝑟 .* vv)-df♯_x)/𝑟 )

@@ -1,6 +1,6 @@
 module RiemannianOptim
 
-import LinearAlgebra
+using LinearAlgebra
 import Statistics
 import Printf
 
@@ -26,5 +26,5 @@ export OptimizationConfigType,
         RKHSfitdensitycostfunc,
         gradientRKHSfitdensitycostfunc,
         gethessianRKHSfitdensitycostfunc
-        
+
 end # module
