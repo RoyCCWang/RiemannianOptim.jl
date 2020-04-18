@@ -9,7 +9,7 @@ import Statistics
 import Printf
 
 import ForwardDiff
-import RiemannianOptim TestCI
+import RiemannianOptim
 
 tests = [   "test1_with_Hessian";
             "test1_without_Hessian"]
