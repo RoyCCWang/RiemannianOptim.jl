@@ -4,6 +4,9 @@ import Pkg
 
 Pkg.add("SpecialFunctions")
 Pkg.add("BSON")
+Pkg.build()
+
+
 
 Pkg.activate(".")
 Pkg.build()

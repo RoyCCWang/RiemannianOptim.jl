@@ -1,14 +1,11 @@
 # based on optim.jl
 
 import Random
-
-import Pkg; Pkg.add("SpecialFunctions")
-
 import RiemannianOptim
-
-import Pkg; Pkg.add("BSON")
-
 using Test
+
+import SpecialFunctions
+import BSON
 #
 
 Random.seed!(25)
