@@ -11,7 +11,7 @@ import BSON
 Random.seed!(25)
 
 ## load set up parameters and oracle solution.
-data = BSON.load("../data/density_fit_data1.bson")
+data = BSON.load("./data/density_fit_data1.bson")
 
 y = data[:y]
 X = data[:X]
