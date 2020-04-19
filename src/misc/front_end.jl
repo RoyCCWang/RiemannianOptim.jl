@@ -3,7 +3,7 @@
 
 function solveRKHSℝpproblem(y::Vector{T},
                             X::Vector{Vector{T}},
-                            K::Matrix{T}
+                            K::Matrix{T},
                             μ::T;
                             H::Matrix{T} = gethessianRKHSfitdensitycostfunc(y, K, μ),
                             α_initial = ones(T, length(y)),     ## initial guess.
