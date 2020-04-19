@@ -8,7 +8,7 @@ norm_df_tol::T
 objective_tol::T
 avg_Δf_tol::T
 avg_Δf_window::Int
-max_ideal_update_count::Int
+max_idle_update_count::Int
 
 Note: the optimizer must run for at least avg_Δf_window iterations before avg_Δf_tol is checked as a stopping condition.
 
@@ -21,14 +21,14 @@ norm_df_tol = 1e-5
 objective_tol = 1e-5
 avg_Δf_tol = 0.0 # 1e-12
 avg_Δf_window = 10
-max_ideal_update_count = 50
+max_idle_update_count = 50
 opt_config = OptimizationConfigType( max_iter,
                                         verbose_flag,
                                         norm_df_tol,
                                         objective_tol,
                                         avg_Δf_tol,
                                         avg_Δf_window,
-                                        max_ideal_update_count)
+                                        max_idle_update_count)
 """
 mutable struct OptimizationConfigType{T}
     max_iter::Int
@@ -40,7 +40,7 @@ mutable struct OptimizationConfigType{T}
     #   avg_Δf_tol is checked as a stopping condition.
     avg_Δf_tol::T
     avg_Δf_window::Int
-    max_ideal_update_count::Int
+    max_idle_update_count::Int
 end
 
 

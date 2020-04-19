@@ -32,14 +32,14 @@ f = aa->RKHSfitdensitycostfunc(aa, K, y, μ)
 """
 function engineRp( f::Function,
                     df♯::Function,
-                    x0::𝓜,
+                    x0::Array{T,D},
                     X_template::Array{T,D},
                     metricfunc::Function,
                     selfmetricfunc::Function,
                     TR_config::TrustRegionConfigType{T},
                     config::OptimizationConfigType{T},
                     H::Matrix{T};
-                    ℜ::Function =  ℝ₊₊arrayexpquadraticretraction) where {𝓜,T,D}
+                    ℜ::Function =  ℝ₊₊arrayexpquadraticretraction) where {T,D}
 
     ##### allocate and initialize.
 
@@ -52,7 +52,7 @@ function engineRp( f::Function,
 
     ### trust-region hessian.
     # xx and vv here are vectors (i.e. in coordinate-form).
-    g_x = one(T)
+    g_x = one(T) # TODO allow varying inner products.
     𝐻 = (vv,xx)->(H*(g_x*LinearAlgebra.I))*vv
     if !isposdef(H)
         # Approximate Hessian. H(x)v = 1/r * (∇f(x+rv) - ∇f(x)) + BigO(r).
@@ -88,8 +88,8 @@ function engineRp( f::Function,
     norm_df_array[n] = norm_df
 
     # check stopping conditions
-    ideal_update_count::Int = 0
-    stop_flag::Bool = exitconditionchecksRp(Inf, 1, f_x, norm_df, config, ideal_update_count)
+    idle_update_count::Int = 0
+    stop_flag::Bool = exitconditionchecksRp(Inf, 1, f_x, norm_df, config, idle_update_count)
 
     # optimize.
     while !stop_flag
@@ -138,10 +138,10 @@ function engineRp( f::Function,
         if  f_x_next > f_x
             # current update candidate is no good. Do not update.
             x_next = x
-            ideal_update_count += 1
+            idle_update_count += 1
         else
             # good candidate. Use it for update.
-            ideal_update_count = 0
+            idle_update_count = 0
         end
 
         if config.verbose_flag
@@ -185,7 +185,7 @@ function engineRp( f::Function,
 
 
         # check stopping conditions
-        stop_flag = exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, ideal_update_count)
+        stop_flag = exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, idle_update_count)
 
     end
 
@@ -197,7 +197,7 @@ function engineRp( f::Function,
 end
 
 
-function exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, ideal_update_count)
+function exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, idle_update_count)
     stop_flag = false
 
     # check exit conditions.
@@ -222,8 +222,8 @@ function exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, ideal_updat
         stop_flag = true
     end
 
-    if ideal_update_count > config.max_ideal_update_count
-        Printf.@printf("Haven't seen a valid update for %d iterations. Exit.", config.max_ideal_update_count)
+    if idle_update_count > config.max_idle_update_count
+        Printf.@printf("Haven't seen a valid update for %d iterations. Exit.", config.max_idle_update_count)
         stop_flag = true
     end
 

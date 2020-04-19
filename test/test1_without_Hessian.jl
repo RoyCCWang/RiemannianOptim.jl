@@ -54,14 +54,14 @@ norm_df_tol = 1e-5
 objective_tol = 1e-5
 avg_Δf_tol = 0.0 #1e-12 #1e-5
 avg_Δf_window = 10
-max_ideal_update_count = 50
+max_idle_update_count = 50
 opt_config = OptimizationConfigType( max_iter,
                                         verbose_flag,
                                         norm_df_tol,
                                         objective_tol,
                                         avg_Δf_tol,
                                         avg_Δf_window,
-                                        max_ideal_update_count)
+                                        max_idle_update_count)
 
 
 α_star, f_α_array, norm_df_array, num_iters = engineRp(f,

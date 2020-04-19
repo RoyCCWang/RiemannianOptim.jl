@@ -21,11 +21,16 @@ include("../src/optimization/TRS/trhelpers.jl")
 
 include("../src/problems/RKHS_positive_coefficients.jl")
 
+include("../src/misc/front_end.jl")
+
 export OptimizationConfigType,
         TrustRegionConfigType,
         engineRp,
         RKHSfitdensitycostfunc,
         gradientRKHSfitdensitycostfunc,
-        gethessianRKHSfitdensitycostfunc
+        gethessianRKHSfitdensitycostfunc,
+
+        # front_end.jl
+        solveRKHSℝpproblem
 
 end # module
