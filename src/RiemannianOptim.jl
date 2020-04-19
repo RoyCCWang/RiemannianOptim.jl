@@ -31,6 +31,6 @@ export OptimizationConfigType,
         gethessianRKHSfitdensitycostfunc,
 
         # front_end.jl
-        solveRKHSℝpproblem
+        solveRKHSRpproblem
 
 end # module

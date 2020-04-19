@@ -1,7 +1,7 @@
 
 
 
-function solveRKHSℝpproblem(y::Vector{T},
+function solveRKHSRpproblem(y::Vector{T},
                             X::Vector{Vector{T}},
                             K::Matrix{T}
                             μ::T;
