@@ -57,15 +57,24 @@ df_Euc = aa->gradientRKHSfitdensitycostfunc(y, K, μ, aa)
 H = gethessianRKHSfitdensitycostfunc(y, K, μ)
 #fill!(H, 0.0) # force H to not be posdef. This triggers a Hessain approximnation in the engine.
 
-selfmetricfunc = (XX,pp)->dot(XX,XX)
-metricfunc = (XX,YY,pp)->dot(XX,YY)
+# ## Euclidean metric.
+# g = pp->1.0
+
+# ## prop. metric.
+# g = pp->dot(pp,pp)
+
+## inv. prop. metric.
+g = pp->1.0/(dot(pp,pp)+1.0)
+
+# ## fancy inv. prop. metric.
+# g = pp->1.0/(dot(pp,pp)+norm(pp)+1.0)
 
 ## initial guess.
 α_initial = ones(Float64, length(y))
 
 ## optimization configuration.
-max_iter = 400
-verbose_flag = true #  false
+max_iter = 1600 #400
+verbose_flag = false #  false
 max_iter_tCG = 100
 ρ_lower_acceptance = 0.2 # recommended to be less than 0.25
 ρ_upper_acceptance = 5.0
@@ -81,29 +90,33 @@ objective_tol = 1e-5
 avg_Δf_tol = 0.0 #1e-12 #1e-5
 avg_Δf_window = 10
 max_idle_update_count = 50
+𝑟 = 1e-2
 opt_config = OptimizationConfigType( max_iter,
                                         verbose_flag,
                                         norm_df_tol,
                                         objective_tol,
                                         avg_Δf_tol,
                                         avg_Δf_window,
-                                        max_idle_update_count)
+                                        max_idle_update_count,
+                                        𝑟 )
 
-
-α_star, f_α_array, norm_df_array, num_iters = engineRp(f,
+# TODO get this retraction lower bound sorted out.
+#retraction_lower_bound = 1e-10
+#ℜ =  xx->ℝ₊₊arrayexpquadraticretraction(xx...; lower_bound = retraction_lower_bound)
+@time α_star, f_α_array, norm_df_array, num_iters = engineRp(f,
                                         df_Euc,
                                         α_initial,
-                                        randn(length(α_initial)),
-                                        metricfunc,
-                                        selfmetricfunc,
+                                        copy(α_initial),
                                         TR_config,
                                         opt_config,
-                                        H)
+                                        H;
+                                        𝑔 = g)
+                                        #ℜ = ℜ)
 #
 discrepancy = norm(α_SDP-α_star)
 println("discrepancy between another solver's solution and the RiemannianOptim solution: ", discrepancy)
 
-println("f(α_SDP) = ", f(α_SDP))
+println("f(α_SDP)  = ", f(α_SDP))
 println("f(α_star) = ", f(α_star))
 println()
 

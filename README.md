@@ -3,6 +3,17 @@ RiemannianOptim.jl
 
 This package is about optimization on specific Riemannian manifolds.
 
+# TO DO
+use mul!() see https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/
+
+# Install
+Steps to install this package in Julia:
+1. start Julia REPL, then press the ```]``` key on your keyboard to enter package command mode.
+2. Run the command ```add "https://gitlab.com/RoyCCWang/riemannianoptim"```
+3. Run the command ```import RiemannianOptim``` to compile the package into cache storage.
+
+If this repository is modified in the future, one needs to enter package mode in Julia REPL, and run the command ```update RiemannianOptim```.
+
 
 # Current features
 This repo currently solves the RKHS regularization problem subjected to the coefficients being positive. i.e.:
@@ -19,20 +30,10 @@ The trust-region subproblem for this optimization problem is investigated in ```
 
 Background material for numerical optimization on Riemannian manifolds are available in [1-2].
 
-# Future work
+# Future direction
 General cost functions over the space of positive real numbers, and general cost function over the space of the parameters of a multivariate normal distribution (mean, covariance matrix) will be tested.
 
 Extensions of the non-gradient / heuristic search methods reported in [2] will be explored, if a particularly troublesome cost function with multiple modes is to be implemented.
-
-
-# Install
-Steps to install this package in Julia:
-1. start Julia REPL, then press the ```]``` key on your keyboard to enter package command mode.
-2. Run the command ```add "https://gitlab.com/RoyCCWang/riemannianoptim"```
-3. Run the command ```import RiemannianOptim``` to compile the package into cache storage.
-
-If this repository is modified in the future, one needs to enter package mode in Julia REPL, and run the command ```update RiemannianOptim```.
-
 
 # References
 [1]. P.-A. Absil, R. Mahony, and R. Sepulchre, Optimization Algorithms on Matrix Manifolds. Princeton

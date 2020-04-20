@@ -11,6 +11,8 @@ Uses trust-region and conjugate gradient separately, to decide which update to
 take at each iteration. If H is not positive-definite, then a gradient-based
 approximation will be used.
 
+If 𝑔 outputs NaN for the initial x0, then use Euclidean metric.
+
 engineRp( f::Function,
             df♯::Function,
             x0::𝓜,
@@ -34,15 +36,27 @@ function engineRp( f::Function,
                     df♯::Function,
                     x0::Array{T,D},
                     X_template::Array{T,D},
-                    metricfunc::Function,
-                    selfmetricfunc::Function,
                     TR_config::TrustRegionConfigType{T},
                     config::OptimizationConfigType{T},
                     H::Matrix{T};
-                    ℜ::Function =  ℝ₊₊arrayexpquadraticretraction) where {T,D}
+                    ℜ::Function =  ℝ₊₊arrayexpquadraticretraction,
+                    𝑔::Function = pp->NaN ) where {T,D}
 
     ##### allocate and initialize.
 
+    # set up metric.
+    selfmetricfunc::Function = (XX,pp)->dot(XX, g(pp) .* XX)
+    metricfunc::Function = (XX,YY,pp)->dot(XX, g(pp) .* YY)
+    𝐻::Function = (vv,xx)->(H*(𝑔(xx)*LinearAlgebra.I))*vv
+
+    if 𝑔(x0) == NaN
+        selfmetricfunc = (XX,pp)->dot(XX,XX)
+        metricfunc = (XX,YY,pp)->dot(XX,YY)
+        #𝐻 = (vv,xx)->matixvectormultiply(H,vv)
+        𝐻 = (vv,xx)->H*vv
+    end
+
+    # set up others.
     𝑣 = setupCG(ℜ, length(X_template), copy(x0), copy(X_template))
     x = x0
 
@@ -50,14 +64,33 @@ function engineRp( f::Function,
     df♯_prev = copy(df♯_x)
     η = copy(df♯_x)
 
-    ### trust-region hessian.
+    ### trust-region Hessian map with vector, H[η].
     # xx and vv here are vectors (i.e. in coordinate-form).
-    g_x = one(T) # TODO allow varying inner products.
-    𝐻 = (vv,xx)->(H*(g_x*LinearAlgebra.I))*vv
+
+    # reference.
+    # g_x = one(T) # TODO allow varying inner products.
+    # 𝐻 = (vv,xx)->(H*(g_x*LinearAlgebra.I))*vv
+    #
+    # ## proportional to norm sq.
+    # g = pp->dot(pp,pp)
+    # 𝐻 = (vv,xx)->(H*(g(xx)*LinearAlgebra.I))*vv
+    #
+    ##inverse prop.
+    #g = pp->1.0/(dot(pp,pp)+1.0)
+    #𝐻 = (vv,xx)->(H*(𝑔(xx)*LinearAlgebra.I))*vv
+    #
+    # ## fancy inverse prop.
+    # g = pp->1.0/(dot(pp,pp)+norm(pp)+1.0)
+    # 𝐻 = (vv,xx)->(H*(g(xx)*LinearAlgebra.I))*vv
+
+    #𝐻_inv_prop = (vv,xx)->evalRpHvIP(xx, vv, config.metric_a, config.metric_c, H)
+    #𝐻 = 𝐻_inv_prop
+
     if !isposdef(H)
         # Approximate Hessian. H(x)v = 1/r * (∇f(x+rv) - ∇f(x)) + BigO(r).
-        𝑟 = convert(T, 1e-2)
+        𝑟 = config.𝑟 #convert(T, 1e-2)
         𝐻 = (vv,xx)->( (df♯(xx + 𝑟 .* vv)-df♯_x)/𝑟 )
+        #𝐻_inv_prop = 𝐻
     end
 
     # for trust region.
@@ -91,6 +124,9 @@ function engineRp( f::Function,
     idle_update_count::Int = 0
     stop_flag::Bool = exitconditionchecksRp(Inf, 1, f_x, norm_df, config, idle_update_count)
 
+    # have not switched metric yet.
+    using_default_metric_flag = true
+
     # optimize.
     while !stop_flag
 
@@ -121,19 +157,6 @@ function engineRp( f::Function,
         # only allow updates that decreases the objective function, otherwise do not update.
         f_x_next = f(x_next)
 
-        ## debug.
-        # println("f_x = ", f_x)
-        # println("f_x_next = ", f_x_next)
-        # println()
-        #
-        # println("x = ", x)
-        # println()
-        #
-        # println("x_CG = ", x_CG)
-        # println()
-        #
-        # println("df♯_x = ", df♯_x)
-        # println()
 
         if  f_x_next > f_x
             # current update candidate is no good. Do not update.
@@ -154,19 +177,6 @@ function engineRp( f::Function,
         abs_Δf_history[mod(n,config.avg_Δf_window)+1] = abs(f_x_next - f_x)
         avg_abs_Δf = Statistics.mean(abs_Δf_history)
 
-        ### debug.
-        # if n > 1
-        #     if !(f_x_next <= f_x)
-        #
-        #         println("TR_success_flag = ", TR_success_flag)
-        #         println("f(x_TR) = ", f(x_TR))
-        #         println("f(x_CG) = ", f(x_CG))
-        #         println("f_x_next =", f_x_next)
-        #         println("f_x =", f_x)
-        #     end
-        #     @assert f_x_next <= f_x
-        # end
-
         # update.
         x = x_next
         f_x = f_x_next
@@ -182,8 +192,6 @@ function engineRp( f::Function,
         f_x_array[n] = f_x
         norm_df_array[n] = norm_df
 
-
-
         # check stopping conditions
         stop_flag = exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, idle_update_count)
 
@@ -196,6 +204,17 @@ function engineRp( f::Function,
     return x, f_x_array, norm_df_array, n
 end
 
+# inverse proportional to norm of x.
+function evalRpHvIP(x::Vector{T}, v::Vector{T}, a::T, c::T, H::Matrix{T})::Vector{T} where T <: Real
+
+    g_x = a/(dot(x,x) + c)
+    return H*(g_x*LinearAlgebra.I)*v
+end
+
+# type stable.
+function matixvectormultiply(H::Matrix{T}, v::Vector{T})::Vector{T} where T <: Real
+    return H*v
+end
 
 function exitconditionchecksRp(avg_abs_Δf, n, f_x, norm_df, config, idle_update_count)
     stop_flag = false

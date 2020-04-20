@@ -41,6 +41,14 @@ mutable struct OptimizationConfigType{T}
     avg_Δf_tol::T
     avg_Δf_window::Int
     max_idle_update_count::Int
+
+    # # for metric switch.
+    # mean_x_tol_for_metric_switch::T
+    # metric_a::T
+    # metric_c::T
+
+    # Hessian posdef approximation parameter.
+    𝑟::T
 end
 
 

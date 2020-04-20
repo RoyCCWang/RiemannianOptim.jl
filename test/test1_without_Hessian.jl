@@ -4,14 +4,9 @@ import Random
 using RiemannianOptim
 using Test
 
-# import Pkg
-# Pkg.add("SpecialFunctions")
-# import SpecialFunctions
-# Pkg.add("BSON")
-# import BSON
-
 import SpecialFunctions
 import BSON
+#
 
 Random.seed!(25)
 
@@ -31,8 +26,8 @@ H = gethessianRKHSfitdensitycostfunc(y, K, μ)
 fill!(H, 0.0) # force H to not be posdef. This triggers a Hessain approximnation in the engine.
 
 
-selfmetricfunc = (XX,pp)->dot(XX,XX)
-metricfunc = (XX,YY,pp)->dot(XX,YY)
+## inv. prop. metric.
+g = pp->1.0/(dot(pp,pp)+1.0)
 
 ## initial guess.
 α_initial = ones(Float64, length(y))
@@ -55,13 +50,15 @@ objective_tol = 1e-5
 avg_Δf_tol = 0.0 #1e-12 #1e-5
 avg_Δf_window = 10
 max_idle_update_count = 50
+𝑟 = 1e-2
 opt_config = OptimizationConfigType( max_iter,
                                         verbose_flag,
                                         norm_df_tol,
                                         objective_tol,
                                         avg_Δf_tol,
                                         avg_Δf_window,
-                                        max_idle_update_count)
+                                        max_idle_update_count,
+                                        𝑟 )
 
 
 α_star, f_α_array, norm_df_array, num_iters = engineRp(f,
@@ -72,7 +69,8 @@ opt_config = OptimizationConfigType( max_iter,
                                         selfmetricfunc,
                                         TR_config,
                                         opt_config,
-                                        H)
+                                        H;
+                                        𝑔 = g)
 #
 discrepancy = norm(α_SDP-α_star)
 println("discrepancy between another solver's solution and the RiemannianOptim solution: ", discrepancy)

@@ -31,7 +31,8 @@ function ℝ₊₊expquadraticretraction(p::T, X::T, t::T2;
     #     b = exp(log(X)+log(t)-log(p))
     # end
 
-    ## crazy idea... # I am here. make this an actual smooth map.
+    ## idea: force monotone retraction..
+    # TODO # make this an actual smooth map.
     t = clamp(t, min(1/b, -1/b), max(1/b, -1/b))
 
     # compute multiplier
@@ -49,6 +50,11 @@ end
 function ℝ₊₊expquadraticretraction(p::T, X::T, Y::T, t::T2;
                                     lower_bound::T2 = convert(T2,1e-15))::T2 where {T <: Real, T2 <: Real}
     b = (X+t*Y)/p
+
+    ## idea: force monotone retraction..
+    # TODO # make this an actual smooth map.
+    t = clamp(t, min(1/b, -1/b), max(1/b, -1/b))
+
     a = -b^2/2
     multiplier = exp(a+b)
 
@@ -59,20 +65,22 @@ end
 ## for an array of positive numbers.
 function ℝ₊₊arrayexpquadraticretraction(p::Vector{T},
                                         X::Vector{T},
-                                        t::T2)::Vector{T2} where {  T <: Real,
-                                                                    T2 <: Real}
+                                        t::T2;
+                                        lower_bound::T2 = convert(T2,1e-15))::Vector{T2} where {  T <: Real, T2 <: Real}
     length(p) == length(X)
 
-    return collect( ℝ₊₊expquadraticretraction(p[i],X[i],t) for i = 1:length(p) )
+    return collect( ℝ₊₊expquadraticretraction(  p[i], X[i], t;
+                        lower_bound = lower_bound) for i = 1:length(p) )
 end
 
 # for vector transports. For use only with automatic differentiation.
 function ℝ₊₊arrayexpquadraticretraction(p::Vector{T},
                                         X::Vector{T},
                                         Y::Vector{T},
-                                        t::T2)::Vector{T2} where {  T <: Real,
-                                                                    T2 <: Real}
+                                        t::T2;
+                                        lower_bound::T2 = convert(T2,1e-15) )::Vector{T2} where {  T <: Real, T2 <: Real}
     length(p) == length(X)
 
-    return collect( ℝ₊₊expquadraticretraction(p[i],X[i],Y[i],t) for i = 1:length(p) )
+    return collect( ℝ₊₊expquadraticretraction(p[i], X[i], Y[i], t;
+                        lower_bound = lower_bound) for i = 1:length(p) )
 end
