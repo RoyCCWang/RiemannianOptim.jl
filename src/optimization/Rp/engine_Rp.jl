@@ -45,8 +45,8 @@ function engineRp( f::Function,
     ##### allocate and initialize.
 
     # set up metric.
-    selfmetricfunc::Function = (XX,pp)->dot(XX, g(pp) .* XX)
-    metricfunc::Function = (XX,YY,pp)->dot(XX, g(pp) .* YY)
+    selfmetricfunc::Function = (XX,pp)->dot(XX, 𝑔(pp) .* XX)
+    metricfunc::Function = (XX,YY,pp)->dot(XX, 𝑔(pp) .* YY)
     𝐻::Function = (vv,xx)->(H*(𝑔(xx)*LinearAlgebra.I))*vv
 
     if 𝑔(x0) == NaN
