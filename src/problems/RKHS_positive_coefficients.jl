@@ -5,7 +5,8 @@ function RKHSfitdensitycostfunc(α::Vector{T}, Kp::Matrix{T}, y::Vector{T}, μ::
 
     r = Kp*α-y
     term1 = dot(r,r)
-    term2 = μ*dot(α, Kp, α)
+    #term2 = μ*dot(α, Kp, α)
+    term2 = μ*dot(α, Kp*α)
     obj = term1 + term2
 
     return obj
