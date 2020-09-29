@@ -10,10 +10,9 @@ import Random
 include("../src/declarations.jl")
 
 include("../src/retractions/Rp.jl")
+include("../src/retractions/circular.jl")
 
 include("../src/manifold/vector_transport.jl")
-
-#include("../src/VGP/objective.jl")
 
 PyPlot.close("all")
 
@@ -22,14 +21,19 @@ Random.seed!(25)
 
 fig_num = 1
 
+# a should be positive.
+
+
+
 ### create curve.
-println("demo: ℝ_+ retraction.")
-p = rand()
-#X = abs(randn()) # force positive.
-X = -abs(randn()) # force negative.
+println("demo: circle retraction.")
+p = 5/6*pi #rand()
+X = abs(randn()) # force positive.
+#X = -abs(randn()) # force negative.
 t = randn()
 
-f = tt->ℝ₊₊expquadraticretraction(p,X,tt)
+
+f = tt->circleretraction(p,X,tt)
 df_num = tt->Calculus.derivative(f,tt)
 df = tt->ForwardDiff.derivative(f,tt)
 
@@ -44,28 +48,13 @@ println("End of demo.")
 println()
 
 
-g = tt->f(tt)/p
 
 Nv = 1000
-#t_range = LinRange(lower_bound, upper_bound, Nv)
-τ = 80.0
-t_range = LinRange(-τ+p, τ+p, Nv)
+#t_range = LinRange(0, π/multiplier, Nv)
+t_range = LinRange(0, 50.0, Nv)
+#t_range = LinRange(0, 10.0, Nv)
 
 f_t = f.(t_range)
-
-println("peak value:")
-max_val, ind = findmax(f_t)
-println("peak value should be at t_peak = ", p/X)
-println("t_range[ind] = ", t_range[ind])
-println("ind = ", ind)
-println()
-
-println("peak value should be f(t_peak) = ", f(p/X))
-println("max_val = ", max_val)
-println()
-println()
-
-
 
 PyPlot.figure(fig_num)
 fig_num += 1
@@ -75,10 +64,3 @@ PyPlot.plot(t_range, f_t)
 
 title_string = "retraction vs. t"
 PyPlot.title(title_string)
-
-## No matter the p and X, we've.
-# julia> g(p/X)
-# 1.648721270700128
-#
-# julia> g(-p/X)
-# 0.22313016014842987

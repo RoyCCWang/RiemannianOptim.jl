@@ -33,11 +33,7 @@ function rank1positivediagmretraction(p::Rank1PositiveDiagmType,
     return [p_c_next p_A_next]
 end
 
-
-
-
-
-
+#####
 function choleskyretraction(p::CholeskyType{T},
                             X::Vector{T},
                             t::T)::CholeskyType{T} where T
@@ -74,7 +70,7 @@ end
 function MVNretraction( p::MVNType{T},
                         X::Vector{T},
                         t::T2)::MVNType{T2} where {T,T2}
-#
+
     #
     p_m_next = p.μ + t .* X[1:n]
 
@@ -88,11 +84,27 @@ function MVNretraction( p::MVNType{T},
                         X::Vector{T},
                         Y::Vector{T},
                         t::T2)::Vector{T2} where {T,T2}
-#
+
     #
     p_m_next = p.μ + X[1:n] + t .* Y[1:n]
 
     p_L_next = choleskyretraction(p.L, X[n+1:end], Y[n+1:end], t)
 
     return [p_m_next; p_L_next]
+end
+
+
+###### new.
+function FIDretractioneven( p::Vector{T},
+                            X::Vector{T},
+                            t::T2,
+                            N_pairs::Int)::Vector{T2} where {T <: Real, T2 <: Real}
+    #
+    α_values = p[1:N_pairs]
+    β_array = p[N_pairs+1:end]
+
+    out_α = collect( ℝ₊₊expquadraticretraction(α_values[i], X[i], t) for i = 1:length(α_values) )
+    out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], t) for i = 1:length(β_array) )
+
+    return [out_α; out_β]
 end
