@@ -84,3 +84,7 @@ function ℝ₊₊arrayexpquadraticretraction(p::Vector{T},
     return collect( ℝ₊₊expquadraticretraction(p[i], X[i], Y[i], t;
                         lower_bound = lower_bound) for i = 1:length(p) )
 end
+
+
+
+### simplex volume.

@@ -58,7 +58,7 @@ function engineFID( f::Function,
 
     # set up others.
     𝑣 = setupCG(ℜ, length(X_template), copy(x0), copy(X_template))
-    x = x0
+    x = copy(x0)
 
     df♯_x = df♯(x0)
     df♯_prev = copy(df♯_x)
@@ -102,19 +102,21 @@ function engineFID( f::Function,
     Y = copy(X_template)
 
     # allocate trace storage for output objects.
-    f_x_array = zeros(config.max_iter)
-    norm_df_array = zeros(config.max_iter)
+    f_x_array = Vector{T}(undef, config.max_iter)
+    norm_df_array = Vector{T}(undef, config.max_iter)
 
     # allocate trace storage for internal objects.
-    abs_Δf_history = Vector{T}(undef,config.avg_Δf_window)
+    abs_Δf_history = Vector{T}(undef, config.avg_Δf_window)
 
     # prepare initial quantities.
     n = 1
 
     f_x = f(x)
-    f_x_next = f_x
+    f_x_next = NaN # f_x
     x_cf = copy(x) # cf stands for coordinate-form.
     norm_df = selfmetricfunc(df♯_x,x)
+
+    x_next = copy(x)
 
     # record.
     f_x_array[n] = f_x
@@ -142,32 +144,54 @@ function engineFID( f::Function,
         #TR_success_flag = false
 
         # choose an update.
-        x_next = x # default behavior: no update.
+        x_next[:] = x # default behavior: no update.
         # if f(x_TR) < f(x_CG) && TR_success_flag
         #     x_next = x_TR
         # elseif CG_success_flag
         #     x_next = x_CG
         # end
-        if f(x_TR) < f(x_CG)
-            x_next = x_TR
+
+        # only allow updates that decreases the objective function,
+        #   otherwise do not update.
+        if f(x_TR) < f(x_CG) && f(x_TR) < f_x
+
+            if config.verbose_flag
+                println("Used TR solution.")
+            end
+            x_next[:] = x_TR
+            idle_update_count = 0
+
+        elseif f(x_CG) < f_x
+
+            if config.verbose_flag
+                println("Used CG solution.")
+            end
+            x_next[:] = x_CG
+            idle_update_count = 0
+
         else
-            x_next = x_CG
+            if config.verbose_flag
+                println("No update this iter.")
+            end
+            idle_update_count += 1
         end
 
         # only allow updates that decreases the objective function, otherwise do not update.
         f_x_next = f(x_next)
 
 
-        if  f_x_next > f_x
-            # current update candidate is no good. Do not update.
-            x_next = x
-            idle_update_count += 1
-        else
-            # good candidate. Use it for update.
-            idle_update_count = 0
-        end
+        # if  f_x_next > f_x
+        #     # current update candidate is no good. Do not update.
+        #     x_next[:] = x
+        #     idle_update_count += 1
+        #     #@assert 10 == 0 debug.
+        # else
+        #     # good candidate. Use it for update.
+        #     idle_update_count = 0
+        # end
 
         if config.verbose_flag
+            println("idle_update_count = ", idle_update_count)
             Printf.@printf("Iter: %d, f(x) = %f. Radius: %f\n", n, f_x, radius)
             println()
             println()
@@ -178,7 +202,7 @@ function engineFID( f::Function,
         avg_abs_Δf = Statistics.mean(abs_Δf_history)
 
         # update.
-        x = x_next
+        x[:] = x_next
         f_x = f_x_next
         n += 1
 

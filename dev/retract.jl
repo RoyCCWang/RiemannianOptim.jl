@@ -20,13 +20,14 @@ include("../src/retractions/Rp.jl")
 
 include("../src/manifold/vector_transport.jl")
 
-include("../src/VGP/objective.jl")
+#include("../src/VGP/objective.jl")
 
 PyPlot.close("all")
 
 Random.seed!(25)
 
 fig_num = 1
+
 
 
 println("demo: MVN retraction.")
@@ -83,54 +84,6 @@ g(x0) # this works.
 
 #@assert 1==2
 
-### create curve.
-println("demo: ℝ_+ retraction.")
-p = randn()
-X = randn()
-t = randn()
-
-f = tt->ℝ₊₊expquadraticretraction(p,X,tt)
-df_num = tt->Calculus.derivative(f,tt)
-df = tt->ForwardDiff.derivative(f,tt)
-
-println("ND: df(0.0) = ", df_num(0.0))
-println("AD: df(0.0) = ", df(0.0))
-println("X = ", X)
-println("This should be zero if retraction is first order: abs(X-df(0)) = ", abs(X-df(0.0)))
-
-df2 = tt->ForwardDiff.derivative(df,tt)
-println("This should be zero is retraction is second order (using AD): df2(0.0) = ", df2(0.0))
-println("End of demo.")
-println()
-
-
-
-# array of positive numbers.
-println("demo: ℝ_+ array retraction.")
-N = 3
-p = randn(N)
-X = randn(N)
-t = randn()
-
-h = tt->ℝ₊₊arrayexpquadraticretraction(p,X,tt)
-dh_num = tt->Calculus.derivative(h,tt)
-dh = tt->ForwardDiff.derivative(h,tt)
-
-println("ND: dh(0.0) = ", dh_num(0.0))
-println("AD: dh(0.0) = ", dh(0.0))
-println("X = ", X)
-println("This should be zero if retraction is first order: norm(X-dh(0)) = ", norm(X-dh(0.0)))
-
-dh2 = tt->ForwardDiff.derivative(dh,tt)
-println("This should be zero is retraction is second order (using AD): norm(dh2(0.0)) = ", norm(dh2(0.0)))
-println("End of demo.")
-println()
-
-# try computing vector transport.
-Y = randn(N)
-v = VectorTransportType(p, ℝ₊₊arrayexpquadraticretraction,X,Y)
-out = evalvectortransport(v,p,X,2 .* X)
-out_self = evalvectortransport(v,p,X,X)
 
 @assert 1==2
 #

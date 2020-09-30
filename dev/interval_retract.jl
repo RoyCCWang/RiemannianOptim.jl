@@ -9,8 +9,7 @@ import Random
 
 include("../src/declarations.jl")
 
-include("../src/retractions/Rp.jl")
-include("../src/retractions/circular.jl")
+include("../src/retractions/interval.jl")
 
 include("../src/manifold/vector_transport.jl")
 
@@ -26,14 +25,20 @@ fig_num = 1
 
 
 ### create curve.
-println("demo: circle retraction.")
-p = 5/6*pi #rand()
+println("demo: interval retraction.")
+
+u = -20.5
+v = 34.2
+
+#p = randn()
+p = v - 1e-2
+
 X = abs(randn()) # force positive.
 #X = -abs(randn()) # force negative.
 t = abs(randn())
 
 
-f = tt->circleretraction(p,X,tt)
+f = tt->intervalretraction(p,X,tt, u, v)
 df_num = tt->Calculus.derivative(f,tt)
 df = tt->ForwardDiff.derivative(f,tt)
 
@@ -51,8 +56,8 @@ println()
 
 Nv = 1000
 #t_range = LinRange(0, π/multiplier, Nv)
-t_range = LinRange(0, 50.0, Nv)
-#t_range = LinRange(0, 10.0, Nv)
+t_range = LinRange(0, 5.0, Nv)
+#t_range = LinRange(-50.0, 0.0, Nv)
 
 f_t = f.(t_range)
 
@@ -64,3 +69,36 @@ PyPlot.plot(t_range, f_t)
 
 title_string = "retraction vs. t"
 PyPlot.title(title_string)
+
+
+
+
+
+###### array version.
+# array of positive numbers.
+println("demo: lowersimplex retraction.")
+N = 10
+p = abs.(randn(N))
+sort!(p, rev=true)
+v1 = p[1] + 1.0
+
+X = randn(N)
+t = abs(randn())
+
+h = tt->lowersimplexretraction(p, X, tt, v1)
+dh_num = tt->Calculus.derivative(h,tt)
+dh = tt->ForwardDiff.derivative(h,tt)
+
+println("ND: dh(0.0) = ", dh_num(0.0))
+println("AD: dh(0.0) = ", dh(0.0))
+println("X = ", X)
+println("This should be zero if retraction is first order: norm(X-dh(0)) = ", norm(X-dh(0.0)))
+
+dh2 = tt->ForwardDiff.derivative(dh,tt)
+println("This should be zero is retraction is second order (using AD): norm(dh2(0.0)) = ", norm(dh2(0.0)))
+println("End of demo.")
+println()
+
+println("[p h(1.0) X] = ")
+display([p h(1.0) X])
+println()

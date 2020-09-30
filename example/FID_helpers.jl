@@ -1,4 +1,4 @@
-function evalFIDcomponent(t::T, α, β, λ, Ω)::Complex{T} where T <: Real
+function evalFIDcomponent(t, α::T, β, λ, Ω)::Complex{T} where T <: Real
 
     if t < zero(T)
         return zero(T)
@@ -15,9 +15,10 @@ function FIDcostfunc(   p::Vector{T2},
                         Ω_array::Vector{T},
                         λ_array::Vector{T},
                         N_pairs::Int,
+                        𝓣,
                         𝓤,
                         DTFT_hs_𝓤::Vector{Complex{T}},
-                        DTFT_h::Function)::T2 where {T <: Real, T2 <: Real}
+                        DTFT_h_𝓤::Vector{Complex{T}})::T2 where {T <: Real, T2 <: Real}
 
     # parse.
     α_values = p[1:N_pairs]
@@ -32,20 +33,21 @@ function FIDcostfunc(   p::Vector{T2},
                     β_array[l],
                     λ_array[l],
                     Ω_array[l]) for l = 1:L )
-    f_t = f.(t)
+    f_𝓣 = f.(𝓣)
 
-    DTFT_f = vv->computeDTFTch3eq29(f_t, vv, t)
-    DTFT_hf = vv->(DTFT_f(vv) * DTFT_h(vv))
+    DTFT_f = vv->computeDTFTch3eq29AD(f_𝓣, vv, 𝓣)
+    #DTFT_hf = vv->(DTFT_f(vv) * DTFT_h(vv))
 
     # data.
     #DTFT_hs = vv->(DTFT_s(vv) * DTFT_h(vv))
 
-    score = zero(T)
+    score = zero(T2)
     for n = 1:length(𝓤)
-        RHS = DTFT_hf(𝓤[n])
+
         LHS = DTFT_hs_𝓤[n]
 
-        # score += abs( LHS - RHS )
+        #RHS = DTFT_hf(𝓤[n])
+        RHS = DTFT_f(𝓤[n]) * DTFT_h_𝓤[n]
 
         # corresponds to least-squares objective.
         score += abs2( LHS - RHS )

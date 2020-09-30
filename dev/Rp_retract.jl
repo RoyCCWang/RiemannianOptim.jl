@@ -82,3 +82,32 @@ PyPlot.title(title_string)
 #
 # julia> g(-p/X)
 # 0.22313016014842987
+
+
+###### array version.
+# array of positive numbers.
+println("demo: ℝ_+ array retraction.")
+N = 3
+p = abs.(randn(N))
+X = randn(N)
+t = abs(randn())
+
+h = tt->ℝ₊₊arrayexpquadraticretraction(p,X,tt)
+dh_num = tt->Calculus.derivative(h,tt)
+dh = tt->ForwardDiff.derivative(h,tt)
+
+println("ND: dh(0.0) = ", dh_num(0.0))
+println("AD: dh(0.0) = ", dh(0.0))
+println("X = ", X)
+println("This should be zero if retraction is first order: norm(X-dh(0)) = ", norm(X-dh(0.0)))
+
+dh2 = tt->ForwardDiff.derivative(dh,tt)
+println("This should be zero is retraction is second order (using AD): norm(dh2(0.0)) = ", norm(dh2(0.0)))
+println("End of demo.")
+println()
+
+# try computing vector transport.
+Y = randn(N)
+v = VectorTransportType(p, ℝ₊₊arrayexpquadraticretraction,X,Y)
+out = evalvectortransport(v,p,X,2 .* X)
+out_self = evalvectortransport(v,p,X,X)

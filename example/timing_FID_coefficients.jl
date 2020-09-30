@@ -136,23 +136,87 @@ f = aa->FIDcostfunc(aa, Ω_array,
 df_ND = aa->Calculus.gradient(f, aa)
 df_AD = aa->ForwardDiff.gradient(f, aa)
 
-# # verify AD.
-# df_ND_p0 = df_ND(p0)
-# df_AD_p0 = df_AD(p0)
-# diff = norm(df_ND_p0 - df_AD_p0)
+df_ND_p0 = df_ND(p0)
+df_AD_p0 = df_AD(p0)
+diff = norm(df_ND_p0 - df_AD_p0)
+println("diff = ", diff)
+println()
+
+println("Benchmarking df_ND:")
+@btime df_ND(p0)
+
+println("Benchmarking df_AD:")
+@btime df_AD(p0)
+
+println("Benchmarking f:")
+@btime f(p0)
+
+
+
+# C = FIDcomputeC(Ω_array, λ_array)
+# f2 = aa->FIDcostfuncsumform(aa, Ω_array,
+#         λ_array, N_pairs, 𝓣, 𝓤, DTFT_hs_𝓤, DTFT_h_𝓤, C)
+#
+
+𝑓, update𝑓! = setupmodeleven(L, N_pairs, Ω_array, λ_array)
+𝑓_𝓣 = Vector{Complex{Float64}}(undef, length(𝓣))
+DTFT_𝑓 = vv->computeDTFTch3eq29(𝑓_𝓣, vv, 𝓣)
+
+f2 = pp->FIDcostfuncpersist!( 𝑓_𝓣, pp, 𝑓, update𝑓!, DTFT_𝑓,
+                𝓣, 𝓤, DTFT_hs_𝓤, DTFT_h_𝓤)
+
+f_p0 = f(p0)
+f2_p0 = f2(p0)
+diff = f_p0 - f2_p0
+println("diff = ", diff)
+println()
+
+println("Benchmarking f:")
+@btime f(p0)
+
+println("Benchmarking f2:")
+@btime f2(p0)
+
+@assert 1==2
+
+@benchmark f(x0) setup=(x0=rand(N_vars))
+@benchmark f2(x0) setup=(x0=rand(N_vars))
+
+@assert 1==2
+
+df_ND_p0 = df_ND(p0)
+df2_p0 = df2(p0)
+# diff = norm(df_ND_p0 - df2_p0)
 # println("diff = ", diff)
 # println()
-#
-# println("Benchmarking df_ND:")
-# @btime df_ND(p0)
-#
-# println("Benchmarking df_AD:")
-# @btime df_AD(p0)
-#
-# println("Benchmarking f:")
-# @btime f(p0)
 
-df_Euc = df_AD
+# println("Benchmarking f2:")
+# @benchmark f2(x0) setup=(x0=rand(N_vars))
+
+x0 = rand(N_vars)
+
+println("Benchmarking df2:")
+@btime df2(x0)
+
+
+println("Benchmarking df_ND:")
+@btime df_ND(x0)
+
+@assert 2==333
+
+using BenchmarkTools
+
+println("Benchmarking f:")
+@benchmark f(x0) setup=(x0=rand(N_vars))
+println()
+
+println("Benchmarking f2:")
+@benchmark f2(x0) setup=(x0=rand(N_vars))
+println()
+
+@assert 2==333
+
+df_Euc = aa->Calculus.gradient(f, aa)
 H = Calculus.hessian(f, p0)
 #fill!(H, 0.0) # force H to not be posdef. This triggers a Hessain approximnation in the engine.
 
@@ -180,9 +244,7 @@ df_Euc(p_oracle) # makes sense. is practically zero.
 p_initial = [α_initial; β_initial]
 
 ## optimization configuration.
-# 30 is 2 min
-# 100 is 784 sec.
-max_iter = 100 #30 #17
+max_iter = 30 #100 #17
 verbose_flag = true
 max_iter_tCG = 30 #100
 ρ_lower_acceptance = 0.2 # recommended to be less than 0.25
