@@ -30,6 +30,9 @@ export OptimizationConfigType,
         gradientRKHSfitdensitycostfunc,
         gethessianRKHSfitdensitycostfunc,
 
+        # retractions or projections.
+        projectcircle,
+
         # front_end.jl
         solveRKHSℝpproblem
 
