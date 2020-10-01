@@ -25,7 +25,7 @@ include("../src/misc/front_end.jl")
 
 export OptimizationConfigType,
         TrustRegionConfigType,
-        engineRp,
+        engineArray,
         RKHSfitdensitycostfunc,
         gradientRKHSfitdensitycostfunc,
         gethessianRKHSfitdensitycostfunc,

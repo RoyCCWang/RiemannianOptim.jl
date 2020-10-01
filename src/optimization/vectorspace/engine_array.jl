@@ -11,7 +11,8 @@ Uses trust-region and conjugate gradient separately, to decide which update to
 take at each iteration. If H is not positive-definite, then a gradient-based
 approximation will be used.
 
-If 𝑔 outputs NaN for the initial x0, then use Euclidean metric.
+# bug: If 𝑔 outputs NaN for the initial x0, should be using the Euclidean metric.
+# set 𝑔 = pp->1.0 for Euclidean metric for now.
 
 engineRp( f::Function,
             df♯::Function,
@@ -32,15 +33,15 @@ df_Euc = aa->gradientRKHSfitdensitycostfunc(y, K, μ, aa)
 
 f = aa->RKHSfitdensitycostfunc(aa, K, y, μ)
 """
-function engineFID( f::Function,
+function engineArray( f::Function,
                     df♯::Function,
                     x0::Array{T,D},
                     X_template::Array{T,D},
                     TR_config::TrustRegionConfigType{T},
                     config::OptimizationConfigType{T},
-                    H::Matrix{T};
-                    ℜ::Function =  ℝ₊₊arrayexpquadraticretraction,
-                    𝑔::Function = pp->NaN ) where {T,D}
+                    H::Matrix{T},
+                    ℜ::Function;
+                    𝑔::Function = pp->one(T) ) where {T,D}
 
     ##### allocate and initialize.
 
@@ -87,6 +88,7 @@ function engineFID( f::Function,
     #𝐻 = 𝐻_inv_prop
 
     if !isposdef(H)
+
         # Approximate Hessian. H(x)v = 1/r * (∇f(x+rv) - ∇f(x)) + BigO(r).
         𝑟 = config.𝑟 #convert(T, 1e-2)
         𝐻 = (vv,xx)->( (df♯(xx + 𝑟 .* vv)-df♯_x)/𝑟 )

@@ -29,7 +29,10 @@ include("../src/retractions/Rp.jl")
 include("../src/manifold/vector_transport.jl")
 
 include("../src/optimization/CG.jl")
-include("../src/optimization/Rp/engine_Rp.jl")
+
+#include("../src/optimization/Rp/engine_Rp.jl")
+include("../src/optimization/vectorspace/engine_array.jl")
+
 include("../src/optimization/TRS/trustregion.jl")
 include("../src/optimization/TRS/trhelpers.jl")
 
@@ -103,15 +106,17 @@ opt_config = OptimizationConfigType( max_iter,
 # TODO get this retraction lower bound sorted out.
 #retraction_lower_bound = 1e-10
 #ℜ =  xx->ℝ₊₊arrayexpquadraticretraction(xx...; lower_bound = retraction_lower_bound)
-@time α_star, f_α_array, norm_df_array, num_iters = engineRp(f,
-                                        df_Euc,
-                                        α_initial,
-                                        copy(α_initial),
-                                        TR_config,
-                                        opt_config,
-                                        H;
-                                        𝑔 = g)
-                                        #ℜ = ℜ)
+ℜ = ℝ₊₊arrayexpquadraticretraction
+@time α_star, f_α_array, norm_df_array,
+    num_iters = engineArray(    f,
+                                df_Euc,
+                                α_initial,
+                                copy(α_initial),
+                                TR_config,
+                                opt_config,
+                                H,
+                                ℜ;
+                                𝑔 = g)
 #
 discrepancy = norm(α_SDP-α_star)
 println("discrepancy between another solver's solution and the RiemannianOptim solution: ", discrepancy)

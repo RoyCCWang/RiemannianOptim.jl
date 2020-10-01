@@ -1,3 +1,16 @@
+
+function computeDTFTch3eq29AD(h::Vector{Complex{T}}, u, Λ)::Complex{T} where T <: Real
+
+    running_sum = zero(T)
+    for i = 1:length(Λ)
+        x = Λ[i]
+
+        running_sum += h[i]*exp(-im*2*π*u*x)
+    end
+
+    return running_sum
+end
+
 function evalFIDcomponent(t, α::T, β, λ, Ω)::Complex{T} where T <: Real
 
     if t < zero(T)
@@ -20,13 +33,14 @@ function FIDcostfunc(   p::Vector{T2},
                         DTFT_hs_𝓤::Vector{Complex{T}},
                         DTFT_h_𝓤::Vector{Complex{T}})::T2 where {T <: Real, T2 <: Real}
 
+    L = length(Ω_array)
+
     # parse.
     α_values = p[1:N_pairs]
-    α_array = parseα(α_values)
+    α_array = parseα(α_values, L)
     β_array = p[N_pairs+1:end]
 
-    L = length(β_array)
-    @assert length(α_array) == L
+    @assert length(α_array) == L == length(β_array) == length(λ_array)
 
     # model.
     f = tt->sum( evalFIDcomponent(tt, α_array[l],
@@ -56,11 +70,19 @@ function FIDcostfunc(   p::Vector{T2},
     return score
 end
 
-function parseα( α_values::Vector{T}) where T <: Real
+function parseα( α_values::Vector{T}, L::Int) where T <: Real
 
-    # always even number of components.
+    N_pairs = length(α_values)
+    @assert 2*N_pairs == L || 2*N_pairs-1 == L
+
+    # even number of peaks.
     α_array = Vector{T}(undef, length(α_values)*2)
-    for i = 1:length(α_values)
+    if 2*N_pairs > L
+        # odd number of peaks.
+        resize!(α_array, 2*N_pairs-1)
+    end
+
+    for i = 1:N_pairs
         α_array[i] = α_values[end-i+1]
         α_array[end-i+1] = α_values[end-i+1]
     end
@@ -68,24 +90,29 @@ function parseα( α_values::Vector{T}) where T <: Real
     return α_array
 end
 
+
+
+#### the rest of this file can probably be
+#       discarded after making s_t and h_t
+#       data variables for the example.
 function gettimerange(N::Int, fs::T) where T
    Ts::T = 1/fs
 
    return zero(T):Ts:(N-1)*Ts
 end
 
-# case 1D.
-function computeDTFTch3eq29(h, u::T, Λ)::Complex{T} where T <: Real
-
-    running_sum = zero(T)
-    for i = 1:length(Λ)
-        x = Λ[i]
-
-        running_sum += h[i]*exp(-im*2*π*u*x)
-    end
-
-    return running_sum
-end
+# # case 1D.
+# function computeDTFTch3eq29AD(h, u::T, Λ)::Complex{T} where T <: Real
+#
+#     running_sum = zero(T)
+#     for i = 1:length(Λ)
+#         x = Λ[i]
+#
+#         running_sum += h[i]*exp(-im*2*π*u*x)
+#     end
+#
+#     return running_sum
+# end
 
 function cosinetransitionbandpassimpulsefunc(x::T, a, b, δ)::Complex{T} where T <: Real
 

@@ -20,7 +20,7 @@ using LinearAlgebra
 import BSON
 
 include("FID_helpers.jl")
-include("FID_gradient.jl")
+include("FID_persist.jl")
 
 include("../src/declarations.jl")
 
@@ -32,7 +32,7 @@ include("../src/retractions/interval.jl")
 include("../src/manifold/vector_transport.jl")
 
 include("../src/optimization/CG.jl")
-include("../src/optimization/FID/engine_FID.jl")
+include("../src/optimization/vectorspace/engine_array.jl")
 include("../src/optimization/TRS/trustregion.jl")
 include("../src/optimization/TRS/trhelpers.jl")
 
@@ -59,7 +59,7 @@ L = length(ν_array)
 
 N_pairs = 3
 α_values = [2.4; 0.8; 0.3]
-α_array = parseα(α_values)
+α_array = parseα(α_values, L)
 
 β_array = projectcircle.( rand(length(ν_array)) .* (2*π) )
 
@@ -73,7 +73,7 @@ t = gettimerange(N, fs)
 s = tt->im*sum( exp(-λ_array[l]*tt)*α_array[l]*exp(im*(Ω_array[l]*tt+β_array[l])) for l = 1:L )
 s_t = s.(t)
 
-DTFT_s = vv->computeDTFTch3eq29(s_t, vv, t)
+DTFT_s = vv->computeDTFTch3eq29AD(s_t, vv, t)
 
 # eval.
 N_viz = length(s_t)*2
@@ -104,7 +104,7 @@ N_h = 2001
 h_func = xx->cosinetransitionbandpassimpulsefunc(xx, bp_a, bp_b, bp_δ)
 t_h = gettimerangetunablefilter(N_h, fs)
 h = h_func.(t_h)
-DTFT_h = vv->computeDTFTch3eq29(h, vv, t_h)
+DTFT_h = vv->computeDTFTch3eq29AD(h, vv, t_h)
 
 
 ##### old solve.
@@ -160,7 +160,7 @@ println("Benchmarking f:")
 
 𝑓, update𝑓! = setupmodeleven(L, N_pairs, Ω_array, λ_array)
 𝑓_𝓣 = Vector{Complex{Float64}}(undef, length(𝓣))
-DTFT_𝑓 = vv->computeDTFTch3eq29(𝑓_𝓣, vv, 𝓣)
+DTFT_𝑓 = vv->computeDTFTch3eq29AD(𝑓_𝓣, vv, 𝓣)
 
 f2 = pp->FIDcostfuncpersist!( 𝑓_𝓣, pp, 𝑓, update𝑓!, DTFT_𝑓,
                 𝓣, 𝓤, DTFT_hs_𝓤, DTFT_h_𝓤)
@@ -298,7 +298,7 @@ end
 #retraction_lower_bound = 1e-10
 #ℜ =  xx->ℝ₊₊arrayexpquadraticretraction(xx...; lower_bound = retraction_lower_bound)
 @time p_star, f_p_array, norm_df_array,
-        num_iters = engineFID(  f,
+        num_iters = engineArray(  f,
                                 df_Euc,
                                 p_initial,
                                 copy(p_initial),

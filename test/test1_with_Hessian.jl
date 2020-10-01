@@ -61,7 +61,7 @@ opt_config = OptimizationConfigType( max_iter,
                                         𝑟 )
 
 
-α_star, f_α_array, norm_df_array, num_iters = engineRp(f,
+α_star, f_α_array, norm_df_array, num_iters = engineArray(f,
                                         df_Euc,
                                         α_initial,
                                         randn(length(α_initial)),
@@ -69,7 +69,8 @@ opt_config = OptimizationConfigType( max_iter,
                                         selfmetricfunc,
                                         TR_config,
                                         opt_config,
-                                        H;
+                                        H,
+                                        ℝ₊₊arrayexpquadraticretraction;
                                         𝑔 = g)
 #
 discrepancy = norm(α_SDP-α_star)

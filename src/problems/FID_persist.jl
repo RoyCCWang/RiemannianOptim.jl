@@ -53,71 +53,71 @@ function FIDcomputerϕ(  Hu::Complex{T},
     return r, ϕ
 end
 
-function FIDcostfuncgradient(   p::Vector{T2},
-                        Ω_array::Vector{T},
-                        λ_array::Vector{T},
-                        N_pairs::Int,
-                        𝓣,
-                        𝓤,
-                        DTFT_hs_𝓤::Vector{Complex{T}},
-                        DTFT_h_𝓤::Vector{Complex{T}},
-                        C::Matrix{Complex{T}})::Vector{T} where {T <: Real, T2 <: Real}
-
-    # parse.
-    α_values = p[1:N_pairs]
-    α_array = parseα(α_values)
-    β_array = p[N_pairs+1:end]
-
-    L = length(β_array)
-    @assert length(α_array) == L
-
-    # model.
-    f = tt->sum( evalFIDcomponent(tt, α_array[l],
-                    β_array[l],
-                    λ_array[l],
-                    Ω_array[l]) for l = 1:L )
-    f_t = f.(𝓣)
-
-    DTFT_f = vv->computeDTFTch3eq29(f_t, vv, t)
-
-    # allocate.
-    ∂𝓛_∂α = zeros(T, L)
-    ∂𝓛_∂β = zeros(T, L)
-
-    # compute gradient.
-    for n = 1:length(𝓤)
-
-        diff = DTFT_f(𝓤[n])*DTFT_h_𝓤[n] - DTFT_hs_𝓤[n]
-
-        diff_real = real(diff)
-        diff_imag = imag(diff)
-
-        for l = 1:L
-
-            sum_real = zero(T)
-            sum_imag = zero(T)
-
-            for i = 1:length(𝓣)
-
-                t = 𝓣[i]
-
-                r, ϕ = FIDcomputerϕ( DTFT_h_𝓤[n],
-                            C[l,i], t, 𝓤[n])
-
-                #
-                sum_real += r*cos(β_array[l]+ϕ)
-                sum_imag += r*sin(β_array[l]+ϕ)
-            end
-
-            α_contribution = 2*diff_real*sum_real +
-                                2*diff_imag*sum_imag
-            ∂𝓛_∂α[l] += α_contribution
-        end
-
-    end
-
-    return ∂𝓛_∂α
-end
+# function FIDcostfuncgradient(   p::Vector{T2},
+#                         Ω_array::Vector{T},
+#                         λ_array::Vector{T},
+#                         N_pairs::Int,
+#                         𝓣,
+#                         𝓤,
+#                         DTFT_hs_𝓤::Vector{Complex{T}},
+#                         DTFT_h_𝓤::Vector{Complex{T}},
+#                         C::Matrix{Complex{T}})::Vector{T} where {T <: Real, T2 <: Real}
+#
+#     # parse.
+#     α_values = p[1:N_pairs]
+#     α_array = parseα(α_values, L)
+#     β_array = p[N_pairs+1:end]
+#
+#     L = length(β_array)
+#     @assert length(α_array) == L
+#
+#     # model.
+#     f = tt->sum( evalFIDcomponent(tt, α_array[l],
+#                     β_array[l],
+#                     λ_array[l],
+#                     Ω_array[l]) for l = 1:L )
+#     f_t = f.(𝓣)
+#
+#     DTFT_f = vv->computeDTFTch3eq29AD(f_t, vv, t)
+#
+#     # allocate.
+#     ∂𝓛_∂α = zeros(T, L)
+#     ∂𝓛_∂β = zeros(T, L)
+#
+#     # compute gradient.
+#     for n = 1:length(𝓤)
+#
+#         diff = DTFT_f(𝓤[n])*DTFT_h_𝓤[n] - DTFT_hs_𝓤[n]
+#
+#         diff_real = real(diff)
+#         diff_imag = imag(diff)
+#
+#         for l = 1:L
+#
+#             sum_real = zero(T)
+#             sum_imag = zero(T)
+#
+#             for i = 1:length(𝓣)
+#
+#                 t = 𝓣[i]
+#
+#                 r, ϕ = FIDcomputerϕ( DTFT_h_𝓤[n],
+#                             C[l,i], t, 𝓤[n])
+#
+#                 #
+#                 sum_real += r*cos(β_array[l]+ϕ)
+#                 sum_imag += r*sin(β_array[l]+ϕ)
+#             end
+#
+#             α_contribution = 2*diff_real*sum_real +
+#                                 2*diff_imag*sum_imag
+#             ∂𝓛_∂α[l] += α_contribution
+#         end
+#
+#     end
+#
+#     return ∂𝓛_∂α
+# end
 
 # H is DTFT_h_𝓤.
 # S is DTFT_hs_𝓤.
@@ -134,7 +134,7 @@ function FIDcostfuncsumform(   p::Vector{T2},
 
     # parse.
     α_values = p[1:N_pairs]
-    α_array = parseα(α_values)
+    α_array = parseα(α_values, L)
     β_array = p[N_pairs+1:end]
 
     L = length(β_array)
@@ -186,7 +186,7 @@ end
 function updateαβeven!(α_array, β_array::Vector{T}, p, N_pairs) where T <: Real
 
     α_values = p[1:N_pairs]
-    α_array[:] = parseα(α_values)
+    α_array[:] = parseα(α_values, L)
     β_array[:] = p[N_pairs+1:end]
 
     return nothing
@@ -229,7 +229,7 @@ function FIDcostfuncpersist!(   f_𝓣::Vector{Complex{T}},
     end
 
     # set up DTFT.
-    #DTFT_f = vv->computeDTFTch3eq29(f_𝓣, vv, 𝓣)
+    #DTFT_f = vv->computeDTFTch3eq29AD(f_𝓣, vv, 𝓣)
 
     # compute score.
     score = zero(T)
@@ -245,20 +245,4 @@ function FIDcostfuncpersist!(   f_𝓣::Vector{Complex{T}},
     end
 
     return score
-end
-
-
-
-#### try AD.
-
-function computeDTFTch3eq29AD(h::Vector{Complex{T}}, u, Λ)::Complex{T} where T <: Real
-
-    running_sum = zero(T)
-    for i = 1:length(Λ)
-        x = Λ[i]
-
-        running_sum += h[i]*exp(-im*2*π*u*x)
-    end
-
-    return running_sum
 end

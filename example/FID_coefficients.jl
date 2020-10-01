@@ -19,8 +19,8 @@ using LinearAlgebra
 
 import BSON
 
-include("FID_helpers.jl")
-include("FID_gradient.jl")
+include("../src/problems/FID_helpers.jl")
+include("../src/problems/FID_persist.jl")
 
 include("../src/declarations.jl")
 
@@ -32,11 +32,13 @@ include("../src/retractions/interval.jl")
 include("../src/manifold/vector_transport.jl")
 
 include("../src/optimization/CG.jl")
-include("../src/optimization/FID/engine_FID.jl")
+include("../src/optimization/vectorspace/engine_array.jl")
 include("../src/optimization/TRS/trustregion.jl")
 include("../src/optimization/TRS/trhelpers.jl")
 
 include("../src/problems/RKHS_positive_coefficients.jl")
+
+include("../src/misc/front_end.jl")
 
 PyPlot.close("all")
 
@@ -50,16 +52,22 @@ N = 10000
 
 ## make oracle frequency positions.
 
+# even example.
 ν_array = [210.0; 245.0; 260.0; 340.0; 355.0; 390.0]
+
+# odd example.
+#ν_array = [210.0; 245.0; 300.0; 355.0; 390.0]
+
 Ω_array = ν_array .* (2*π)
 L = length(ν_array)
 
 λ = 1.26
 λ_array = λ .* ones(L)
 
+
 N_pairs = 3
 α_values = [2.4; 0.8; 0.3]
-α_array = parseα(α_values)
+α_array = parseα(α_values, L)
 
 β_array = projectcircle.( rand(length(ν_array)) .* (2*π) )
 
@@ -73,7 +81,7 @@ t = gettimerange(N, fs)
 s = tt->im*sum( exp(-λ_array[l]*tt)*α_array[l]*exp(im*(Ω_array[l]*tt+β_array[l])) for l = 1:L )
 s_t = s.(t)
 
-DTFT_s = vv->computeDTFTch3eq29(s_t, vv, t)
+DTFT_s = vv->computeDTFTch3eq29AD(s_t, vv, t)
 
 # eval.
 N_viz = length(s_t)*2
@@ -104,7 +112,7 @@ N_h = 2001
 h_func = xx->cosinetransitionbandpassimpulsefunc(xx, bp_a, bp_b, bp_δ)
 t_h = gettimerangetunablefilter(N_h, fs)
 h = h_func.(t_h)
-DTFT_h = vv->computeDTFTch3eq29(h, vv, t_h)
+DTFT_h = vv->computeDTFTch3eq29AD(h, vv, t_h)
 
 
 ##### old solve.
@@ -117,6 +125,46 @@ N_𝓤 = 200
 DTFT_s_𝓤 = DTFT_s.(𝓤)
 DTFT_h_𝓤 = DTFT_h.(𝓤)
 DTFT_hs_𝓤 = DTFT_s_𝓤 .* DTFT_h_𝓤
+
+
+
+β_initial = ones(L)
+α_values_initial = sort( collect(1:length(α_values)) ./ length(α_values), rev = true)
+α_max = 500.0
+
+@time p_star, f_p_array, norm_df_array,
+        num_iters = solveFIDαβproblem(Ω_array,
+                    λ_array,
+                    DTFT_s_𝓤,
+                    DTFT_h_𝓤,
+                    𝓣,
+                    𝓤,
+                    α_values_initial,
+                    β_initial,
+                    α_max;
+                    verbose_flag = true)
+
+#
+discrepancy = norm(p_oracle-p_star)
+println("discrepancy between oracle and the solution: ", discrepancy)
+println("[p_oracle p_star]:")
+display([p_oracle p_star])
+println()
+
+# println("f(p_oracle)  = ", f(p_oracle))
+# println("f(p_star)    = ", f(p_star))
+# println()
+
+# Visualize regression result.
+PyPlot.figure(fig_num)
+fig_num += 1
+
+PyPlot.plot(collect(1:num_iters), log.(f_p_array))
+
+title_string = "log f(p) history vs. iterations"
+PyPlot.title(title_string)
+
+@assert 1==2
 
 # ## TODO load set up parameters and oracle solution.
 # #data = BSON.load("../data/density_fit_data1.bson")
@@ -153,11 +201,12 @@ df_AD = aa->ForwardDiff.gradient(f, aa)
 # @btime f(p0)
 
 df_Euc = df_AD
-H = Calculus.hessian(f, p0)
+#H = Calculus.hessian(f, p0)
 #fill!(H, 0.0) # force H to not be posdef. This triggers a Hessain approximnation in the engine.
+H = zeros(Float64, N_vars, N_vars) # use hessian approx.
 
 ## Euclidean metric.
-g = pp->1.0
+#g = pp->1.0
 
 f(p0) # computes.
 f(p_oracle) # makes sense. is practically zero.
@@ -182,7 +231,7 @@ p_initial = [α_initial; β_initial]
 ## optimization configuration.
 # 30 is 2 min
 # 100 is 784 sec.
-max_iter = 100 #30 #17
+max_iter = 30 #100 #30 #17
 verbose_flag = true
 max_iter_tCG = 30 #100
 ρ_lower_acceptance = 0.2 # recommended to be less than 0.25
@@ -211,12 +260,12 @@ opt_config = OptimizationConfigType( max_iter,
 
 # define retractions.
 
+α_max = 500.0
+N_pairs = 3
+
 function ℜ( p::Vector{T},
             X::Vector{T},
             t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
-
-    α_max = 500.0
-    N_pairs = 3
 
     return FIDretractioneven(p, X, t, N_pairs, α_max)
 end
@@ -226,24 +275,22 @@ function ℜ( p::Vector{T},
             Y::Vector{T},
             t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-    α_max = 500.0
-    N_pairs = 3
-
     return FIDretractioneven(p, X, Y, t, N_pairs, α_max)
 end
 
 # TODO get this retraction lower bound sorted out.
 #retraction_lower_bound = 1e-10
 #ℜ =  xx->ℝ₊₊arrayexpquadraticretraction(xx...; lower_bound = retraction_lower_bound)
+g = pp->1.0
 @time p_star, f_p_array, norm_df_array,
-        num_iters = engineFID(  f,
+        num_iters = engineArray(  f,
                                 df_Euc,
                                 p_initial,
                                 copy(p_initial),
                                 TR_config,
                                 opt_config,
-                                H;
-                                ℜ = ℜ,
+                                H,
+                                ℜ;
                                 𝑔 = g)
 #
 
@@ -270,12 +317,5 @@ title_string = "log f(p) history vs. iterations"
 PyPlot.title(title_string)
 
 
-@assert 3==4
-
-# cleared
-# - why increasing cost. due to x_next[:] pass by reference bug.
-# - # case for barrier function. used retraction instead.
-
-# next:
-# find out why so slow,
-# odd number case.
+# issues.
+# kind of slow.

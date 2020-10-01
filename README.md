@@ -8,9 +8,11 @@ use mul!() see https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/
 
 # Install
 Steps to install this package in Julia:
-1. start Julia REPL, then press the ```]``` key on your keyboard to enter package command mode.
-2. Run the command ```add "https://gitlab.com/RoyCCWang/riemannianoptim"```
-3. Run the command ```import RiemannianOptim``` to compile the package into cache storage.
+1. Navigate to repo root directory using terminal.
+2. Run ```git clone https://gitlab.com/RoyCCWang/riemannianoptim``` in terminal.
+3. start Julia REPL, then press the ```]``` key on your keyboard to enter package command mode.
+4. Run the command ```add "ABC/riemannianoptim"```, where ```ABC``` is the path to the repo foot directory.
+5. Run the command ```import RiemannianOptim``` to compile the package into cache storage.
 
 If this repository is modified in the future, one needs to enter package mode in Julia REPL, and run the command ```update RiemannianOptim```.
 
