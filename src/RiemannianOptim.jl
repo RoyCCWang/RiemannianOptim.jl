@@ -11,6 +11,9 @@ import Optim
 include("../src/declarations.jl")
 
 include("../src/retractions/Rp.jl")
+include("../src/retractions/circular.jl")
+include("../src/retractions/compositions.jl")
+include("../src/retractions/interval.jl")
 
 include("../src/manifold/vector_transport.jl")
 
@@ -20,6 +23,8 @@ include("../src/optimization/TRS/trustregion.jl")
 include("../src/optimization/TRS/trhelpers.jl")
 
 include("../src/problems/RKHS_positive_coefficients.jl")
+include("../src/problems/FID_helpers.jl")
+include("../src/problems/FID_persist.jl")
 
 include("../src/misc/front_end.jl")
 
