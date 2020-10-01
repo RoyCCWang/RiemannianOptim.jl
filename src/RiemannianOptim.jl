@@ -17,7 +17,7 @@ include("../src/retractions/interval.jl")
 
 include("../src/manifold/vector_transport.jl")
 
-include("../src/optimization/Rp/engine_Rp.jl")
+#include("../src/optimization/Rp/engine_Rp.jl")
 include("../src/optimization/vectorspace/engine_array.jl")
 
 include("../src/optimization/CG.jl")
