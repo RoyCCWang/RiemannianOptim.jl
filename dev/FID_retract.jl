@@ -41,7 +41,7 @@ X = randn(length(p))
 t = abs(randn())
 
 
-f = tt->FIDretractioneven(p,X,tt, N_pairs, α_max)
+f = tt->FIDnDretraction(p,X,tt, N_pairs, α_max)
 
 f_array = collect(tt->f(tt)[i] for i = 1:length(p))
 df_array_ND = tt->collect(Calculus.derivative(f_array[i], tt) for i = 1:length(p))

@@ -109,19 +109,39 @@ function solveFIDαβproblem( Ω_array::Vector{T},
     H = zeros(T, N_vars, N_vars)
 
     # set up retractions.
-    function ℜ( p::Vector{T},
+    function ℜnD( p::Vector{T},
                 X::Vector{T},
                 t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-        return FIDretractioneven(p, X, t, N_pairs, α_max)
+        return FIDnDretraction(p, X, t, N_pairs, α_max)
     end
 
-    function ℜ( p::Vector{T},
+    function ℜnD( p::Vector{T},
                 X::Vector{T},
                 Y::Vector{T},
                 t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-        return FIDretractioneven(p, X, Y, t, N_pairs, α_max)
+        return FIDnDretraction(p, X, Y, t, N_pairs, α_max)
+    end
+
+    function ℜ1D( p::Vector{T},
+                X::Vector{T},
+                t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+        return FID1Dretraction(p, X, t, N_pairs, α_max)
+    end
+
+    function ℜ1D( p::Vector{T},
+                X::Vector{T},
+                Y::Vector{T},
+                t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+        return FID1Dretraction(p, X, Y, t, N_pairs, α_max)
+    end
+
+    ℜ = ℜnD
+    if length(α_values_initial) == 1
+        ℜ = ℜ1D
     end
 
     ## configuration for the trust-region subproblem.

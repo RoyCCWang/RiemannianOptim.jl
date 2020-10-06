@@ -95,7 +95,41 @@ end
 
 
 ###### new.
-function FIDretractioneven( p::Vector{T},
+
+function FID1Dretraction( p::Vector{T},
+                            X::Vector{T},
+                            t::T2,
+                            N_pairs::Int,
+                            v1)::Vector{T2} where {T <: Real, T2 <: Real}
+    #
+    @assert N_pairs == 1 # TODO handle this more elegantly later.
+    α_values = p[1:N_pairs]
+    β_array = p[N_pairs+1:end]
+
+    out_α = ℝ₊₊expquadraticretraction(α_values[1], X[1], t)
+    out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], t) for i = 1:length(β_array) )
+
+    return [out_α; out_β]
+end
+
+function FID1Dretraction( p::Vector{T},
+                            X::Vector{T},
+                            Y::Vector{T},
+                            t::T2,
+                            N_pairs::Int,
+                            v1)::Vector{T2} where {T <: Real, T2 <: Real}
+    #
+    @assert N_pairs == 1 # TODO handle this more elegantly later.
+    α_values = p[1:N_pairs]
+    β_array = p[N_pairs+1:end]
+
+    out_α = ℝ₊₊expquadraticretraction(α_values[1], X[1], Y[1], t)
+    out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], Y[N_pairs+i], t) for i = 1:length(β_array) )
+
+    return [out_α; out_β]
+end
+
+function FIDnDretraction( p::Vector{T},
                             X::Vector{T},
                             t::T2,
                             N_pairs::Int,
@@ -104,14 +138,13 @@ function FIDretractioneven( p::Vector{T},
     α_values = p[1:N_pairs]
     β_array = p[N_pairs+1:end]
 
-    #out_α = collect( ℝ₊₊expquadraticretraction(α_values[i], X[i], t) for i = 1:N_pairs )
     out_α = lowersimplexretraction(α_values, X[1:N_pairs], t, v1)
     out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], t) for i = 1:length(β_array) )
 
     return [out_α; out_β]
 end
 
-function FIDretractioneven( p::Vector{T},
+function FIDnDretraction( p::Vector{T},
                             X::Vector{T},
                             Y::Vector{T},
                             t::T2,
@@ -121,7 +154,6 @@ function FIDretractioneven( p::Vector{T},
     α_values = p[1:N_pairs]
     β_array = p[N_pairs+1:end]
 
-    #out_α = collect( ℝ₊₊expquadraticretraction(α_values[i], X[i], Y[i], t) for i = 1:N_pairs )
     out_α = lowersimplexretraction(α_values, X[1:N_pairs], Y[1:N_pairs], t, v1)
     out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], Y[N_pairs+i], t) for i = 1:length(β_array) )
 

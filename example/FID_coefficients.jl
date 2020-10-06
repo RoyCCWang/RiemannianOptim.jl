@@ -267,7 +267,7 @@ function ℜ( p::Vector{T},
             X::Vector{T},
             t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-    return FIDretractioneven(p, X, t, N_pairs, α_max)
+    return FIDnDretraction(p, X, t, N_pairs, α_max)
 end
 
 function ℜ( p::Vector{T},
@@ -275,7 +275,7 @@ function ℜ( p::Vector{T},
             Y::Vector{T},
             t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-    return FIDretractioneven(p, X, Y, t, N_pairs, α_max)
+    return FIDnDretraction(p, X, Y, t, N_pairs, α_max)
 end
 
 # TODO get this retraction lower bound sorted out.

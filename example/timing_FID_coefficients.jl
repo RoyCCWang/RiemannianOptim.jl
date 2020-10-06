@@ -280,7 +280,7 @@ function ℜ( p::Vector{T},
     α_max = 500.0
     N_pairs = 3
 
-    return FIDretractioneven(p, X, t, N_pairs, α_max)
+    return FIDnDretraction(p, X, t, N_pairs, α_max)
 end
 
 function ℜ( p::Vector{T},
@@ -291,7 +291,7 @@ function ℜ( p::Vector{T},
     α_max = 500.0
     N_pairs = 3
 
-    return FIDretractioneven(p, X, Y, t, N_pairs, α_max)
+    return FIDnDretraction(p, X, Y, t, N_pairs, α_max)
 end
 
 # TODO get this retraction lower bound sorted out.
