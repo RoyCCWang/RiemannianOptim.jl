@@ -54,3 +54,14 @@ function circleretractionwithproject(p::T, X::T, Y::T, t::T2)::T2 where {T <: Re
 
     return projectcircle(circleretraction(p, X, Y, t))
 end
+
+
+function circleretractionwithproject(p::Vector{T}, X::Vector{T}, t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+    return collect( projectcircle(circleretraction(p[i], X[i], t)) for i = 1:length(p))
+end
+
+function circleretractionwithproject(p::Vector{T}, X::Vector{T}, Y::Vector{T}, t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+    return collect( projectcircle(circleretraction(p[i], X[i], Y[i], t)) for i = 1:length(p) )
+end

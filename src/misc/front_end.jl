@@ -175,3 +175,82 @@ function solveFIDαβproblem( Ω_array::Vector{T},
     #
     return p_star, f_p_array, norm_df_array, num_iters
 end
+
+
+
+function solveFIDβproblem( Ω_array::Vector{T},
+                            λ_array::Vector{T},
+                            α_array::Vector{T},
+                            DTFT_s_𝓤::Vector{Complex{T}},
+                            DTFT_h_𝓤::Vector{Complex{T}},
+                            𝓣,
+                            𝓤,
+                            p_initial::Vector{T};
+                            max_iter::Int = 90,
+                            verbose_flag::Bool = false,
+                            max_iter_tCG = 30,
+                            ρ_lower_acceptance = 0.2, # recommended to be less than 0.25
+                            ρ_upper_acceptance = 5.0,
+                            minimum_TR_radius::T = 1e-3,
+                            maximum_TR_radius::T = 10.0,
+                            norm_df_tol = 1e-5,
+                            objective_tol = 1e-5,
+                            avg_Δf_tol = 0.0, #1e-12 #1e-5
+                            avg_Δf_window = 10,
+                            max_idle_update_count = 50,
+                            g::Function = pp->one(T), # use Euclidean metric.
+                            𝑟 = 1e-2)::Tuple{Vector{T},Vector{T},Vector{T},Int} where T <: Real
+
+    # set up.
+    L = length(β_initial)
+    @assert length(Ω_array) == L == length(λ_array)
+
+    # prepare initial guess.
+    N_vars = length(p_initial)
+
+    # pre-compute constant.
+    DTFT_hs_𝓤 = DTFT_s_𝓤 .* DTFT_h_𝓤
+
+    # set up cost function.
+    f = aa->FIDphasecostfunc(aa, Ω_array,
+            λ_array, α_array, 𝓣, 𝓤, DTFT_hs_𝓤, DTFT_h_𝓤)
+
+    df_Euc = aa->ForwardDiff.gradient(f, aa)
+
+    # tell optimizer to use hessian approx.
+    H = zeros(T, N_vars, N_vars)
+
+    # retraction.
+    ℜ = circleretractionwithproject
+
+    ## configuration for the trust-region subproblem.
+    TR_config = TrustRegionConfigType(  minimum_TR_radius,
+                                        maximum_TR_radius,
+                                        max_iter_tCG,
+                                        verbose_flag,
+                                        ρ_lower_acceptance,
+                                        ρ_upper_acceptance)
+
+    opt_config = OptimizationConfigType( max_iter,
+                                            verbose_flag,
+                                            norm_df_tol,
+                                            objective_tol,
+                                            avg_Δf_tol,
+                                            avg_Δf_window,
+                                            max_idle_update_count,
+                                            𝑟 )
+
+    ## Run scheme.
+    p_star, f_p_array, norm_df_array,
+        num_iters = engineArray(f,
+                            df_Euc,
+                            p_initial,
+                            copy(p_initial),
+                            TR_config,
+                            opt_config,
+                            H,
+                            ℜ;
+                            𝑔 = g)
+    #
+    return p_star, f_p_array, norm_df_array, num_iters
+end

@@ -11,7 +11,8 @@ function computeDTFTch3eq29AD(h::Vector{Complex{T}}, u, Λ)::Complex{T} where T 
     return running_sum
 end
 
-function evalFIDcomponent(t, α::T, β, λ, Ω)::Complex{T} where T <: Real
+# TODO make separate versions for auto-diff wrt α and β and t.
+function evalFIDcomponent(t, α, β::T, λ, Ω)::Complex{T} where T <: Real
 
     if t < zero(T)
         return zero(T)
