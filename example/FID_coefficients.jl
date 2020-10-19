@@ -38,7 +38,9 @@ include("../src/optimization/TRS/trhelpers.jl")
 
 include("../src/problems/RKHS_positive_coefficients.jl")
 
-include("../src/misc/front_end.jl")
+include("../src/frontends/RKHS.jl")
+include("../src/frontends/FID_FT.jl")
+include("../src/frontends/FID_DTFT.jl")
 
 PyPlot.close("all")
 
@@ -133,7 +135,7 @@ DTFT_hs_𝓤 = DTFT_s_𝓤 .* DTFT_h_𝓤
 α_max = 500.0
 
 @time p_star, f_p_array, norm_df_array,
-        num_iters = solveFIDαβproblem(Ω_array,
+        num_iters = solveFIDDTFTαβproblem(Ω_array,
                     λ_array,
                     DTFT_s_𝓤,
                     DTFT_h_𝓤,

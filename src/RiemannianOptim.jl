@@ -28,7 +28,12 @@ include("../src/problems/RKHS_positive_coefficients.jl")
 include("../src/problems/FID_helpers.jl")
 include("../src/problems/FID_persist.jl")
 
-include("../src/misc/front_end.jl")
+#include("../src/frontends/RKHS.jl")
+include("../src/frontends/FID_FT.jl")
+include("../src/frontends/FID_DTFT.jl")
+include("../src/frontends/RKHS.jl")
+include("../src/frontends/FID_FT.jl")
+include("../src/frontends/FID_DTFT.jl")
 
 export OptimizationConfigType,
         TrustRegionConfigType,
@@ -40,7 +45,7 @@ export OptimizationConfigType,
         # retractions or projections.
         projectcircle,
 
-        # front_end.jl
+        # front_ends.
         solveRKHSℝpproblem
 
 end # module
