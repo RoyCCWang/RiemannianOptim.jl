@@ -75,14 +75,16 @@ function solveFIDFTβproblem( ξs::Vector{T},
 end
 
 
-function solveFIDFTαβproblem( ξs::Vector{T},
+
+# RMO is Riemmanian manifold optimization.
+function solveFIDFTαβproblemRMO( ξs::Vector{T},
                             λs::Vector{T},
                             S_𝓟::Vector{Complex{T}},
                             𝓟,
                             α_values_initial::Vector{T},
                             β_initial::Vector{T},
                             α_max::T;
-                            max_iter::Int = 90,
+                            max_iters_RMO::Int = 90,
                             verbose_flag::Bool = false,
                             max_iter_tCG = 30,
                             ρ_lower_acceptance = 0.2, # recommended to be less than 0.25
@@ -112,7 +114,16 @@ function solveFIDFTαβproblem( ξs::Vector{T},
     # set up cost function.
     f = pp->evalFIDFTαβcostfunc(pp, λs, ξs, 𝓟, S_𝓟)
 
-    df_Euc = aa->ForwardDiff.gradient(f, aa)
+    #df_Euc = aa->ForwardDiff.gradient(f, aa)
+
+    αs_persist, βs_persist, ∂𝓛_∂β_eval_persist, ∂𝓛_∂α_eval_persist,
+            ∂𝓛_∂a_eval_persist, diff_persist = setupFTFIDαβ𝓛(N_pairs, L, length(S_𝓟), one(T))
+
+    df_Euc = pp->evalFIDFTαβcostfuncgradient!(αs_persist,
+                    βs_persist, ∂𝓛_∂β_eval_persist,
+                    ∂𝓛_∂α_eval_persist, ∂𝓛_∂a_eval_persist,
+                    diff_persist,
+                    pp, λs, ξs, 𝓟, S_𝓟)
 
     # tell optimizer to use hessian approx.
     H = zeros(T, N_vars, N_vars)
@@ -161,7 +172,7 @@ function solveFIDFTαβproblem( ξs::Vector{T},
                                         ρ_lower_acceptance,
                                         ρ_upper_acceptance)
 
-    opt_config = OptimizationConfigType( max_iter,
+    opt_config = OptimizationConfigType( max_iters_RMO,
                                             verbose_flag,
                                             norm_df_tol,
                                             objective_tol,
@@ -182,5 +193,89 @@ function solveFIDFTαβproblem( ξs::Vector{T},
                             ℜ;
                             𝑔 = g)
     #
-    return p_star, f_p_array, norm_df_array, num_iters, f, df_Euc
+    return p_star, f_p_array, norm_df_array, num_iters,
+            f, df_Euc
+end
+
+function solveFIDFTαβproblemPSO( ξs::Vector{T},
+                            λs::Vector{T},
+                            S_𝓟::Vector{Complex{T}},
+                            𝓟,
+                            α_values_initial::Vector{T},
+                            β_initial::Vector{T};
+                            max_iters_PSO::Int = 90,
+                            N_particles = 3,
+                            ϵ_retraction = 1e-9) where T <: Real
+
+    # set up.
+    L = length(β_initial)
+    @assert length(ξs) == L == length(λs)
+
+    N_pairs = length(α_values_initial)
+
+    # prepare initial guess.
+    p_initial = [α_values_initial; β_initial]
+
+    # set up original problem's objective function.
+    f = pp->evalFIDFTαβcostfunc(pp, λs, ξs, 𝓟, S_𝓟)
+
+    # set up retractions.
+      function ℜnD( p::Vector{T},
+                  X::Vector{T},
+                  t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+          return FIDnDretraction(p, X, t, N_pairs, α_max; ϵ = ϵ_retraction)
+      end
+
+      function ℜnD( p::Vector{T},
+                  X::Vector{T},
+                  Y::Vector{T},
+                  t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+          return FIDnDretraction(p, X, Y, t, N_pairs, α_max; ϵ = ϵ_retraction)
+      end
+
+      function ℜ1D( p::Vector{T},
+                  X::Vector{T},
+                  t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+          return FID1Dretraction(p, X, t, N_pairs, α_max)
+      end
+
+      function ℜ1D( p::Vector{T},
+                  X::Vector{T},
+                  Y::Vector{T},
+                  t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
+
+          return FID1Dretraction(p, X, Y, t, N_pairs, α_max)
+      end
+
+      ℜ = ℜnD
+      if length(α_values_initial) == 1
+          ℜ = ℜ1D
+      end
+
+    # set up PSO's objective function.
+    costfunc = XX->f(ℜ(p_initial, XX, one(T)))
+
+    # initial guess.
+    x0 = zeros(T, length(p_initial))
+
+    # optimize for the tangent vector that yields the least cost.
+    # Unconstrained optimization.
+    op = Optim.Options( iterations = max_iters_PSO,
+                             store_trace = false,
+                             show_trace = false)
+
+    swarm = Optim.ParticleSwarm(; lower = [],
+                    upper = [],
+                    n_particles = N_particles)
+    #
+    results = Optim.optimize(costfunc,
+                    x0, swarm, op)
+
+    x_star = results.minimizer
+    p_star = ℜ(p_initial, x_star, one(T))
+
+    return p_star
 end

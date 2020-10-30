@@ -140,7 +140,30 @@ function evalFIDFTαβcostfunc(   p::Vector{T2},
 end
 
 
-function evalFIDFTαβcostfuncgradient(   p::Vector{T},
+# set up intermediate storage for the cost function and its gradient.
+function setupFTFIDαβ𝓛(N_pairs::Int, L::Int, N::Int, dummy_val::T) where T <: Real
+    #
+    @assert L == 2*N_pairs || L == 2*N_pairs-1
+
+    αs_persist = Vector{T}(undef, N_pairs)
+    βs_persist = Vector{T}(undef, L)
+
+    ∂𝓛_∂β_eval_persist = zeros(T, L)
+    ∂𝓛_∂α_eval_persist = zeros(T, L)
+
+    ∂𝓛_∂a_eval_persist = zeros(T, N_pairs)
+
+    diff_persist = Vector{Complex{T}}(undef, N)
+
+    #d𝓛_p = Vector{T}(undef, L + N_pairs)
+
+    return αs_persist, βs_persist, ∂𝓛_∂β_eval_persist,
+        ∂𝓛_∂α_eval_persist, ∂𝓛_∂a_eval_persist, diff_persist
+end
+
+# mutates αs, βs, ∂𝓛_∂β_eval, ∂𝓛_∂α_eval, ∂𝓛_∂a_eval, diff
+function evalFIDFTαβcostfuncgradient!(   αs, βs, ∂𝓛_∂β_eval, ∂𝓛_∂α_eval, ∂𝓛_∂a_eval, diff,
+                        p::Vector{T},
                         λs::Vector{T},
                         ξs::Vector{T},
                         𝓟,
@@ -150,51 +173,110 @@ function evalFIDFTαβcostfuncgradient(   p::Vector{T},
     L = length(ξs)
 
     α_values = p[1:end-L]
-    αs = parseα(α_values, L)
+    parseα!(αs, α_values, L)
 
-    βs = p[end-L+1:end]
+    βs[:] = p[end-L+1:end]
     #@assert L == length(βs)
 
     # set up.
     N = length(𝓟)
     @assert length(S_𝓟) == N
 
-    # pre-compute.
-    F_𝓟 = collect( evalFIDFT(𝓟[n], αs, βs, λs, ξs) for n = 1:N )
+    N_pairs = length(α_values)
+
+    ## pre-compute.
+    #diff = collect( evalFIDFT(𝓟[n], αs, βs, λs, ξs) - S_𝓟[n] for n = 1:N )
+
+    resize!(diff, N)
+    for n = 1:N
+        diff[n] = evalFIDFT(𝓟[n], αs, βs, λs, ξs) - S_𝓟[n]
+    end
 
     # compute gradient.
 
-    df_eval = zeros(T, L)
+    resize!(∂𝓛_∂β_eval, L)
+    fill!(∂𝓛_∂β_eval, zero(T))
+
+    resize!(∂𝓛_∂α_eval, L)
+    fill!(∂𝓛_∂α_eval, zero(T))
+
     for l = 1:L
         for n = 1:N
 
-            B =λs[l]^2 + (𝓟[n]-ξs[l])^2
+            # compute intermediates.
+            B = λs[l]^2 + (𝓟[n]-ξs[l])^2
 
-            diff_r = real(F_𝓟[n]) - real(S_𝓟[n])
-            diff_i = imag(F_𝓟[n]) - imag(S_𝓟[n])
+            diff_r = real(diff[n])
+            diff_i = imag(diff[n])
 
-            # # for ∂𝓛_∂αl
-            # factor1 = (𝓟[n]-ξs[l])*sin(βs[l]) + λs[l]*cos(βs[l])
-            # term1 = diff_r*factor1
-            #
-            # factor2 = (ξs[l]-𝓟[n])*cos(βs[l]) + λs[l]*sin(βs[l])
-            # term2 = diff_i*factor2
-            #
-            # df_eval[l] += 2*(term1 + term2)/B
+            ξm𝓟cβ = (ξs[l]-𝓟[n])*cos(βs[l])
+            𝓟mξsβ = (𝓟[n]-ξs[l])*sin(βs[l])
+            λcβ = λs[l]*cos(βs[l])
+            λsβ = λs[l]*sin(βs[l])
 
-            # for ∂𝓛_∂βl
-            factor1 = (𝓟[n]-ξs[l])*cos(βs[l]) - λs[l]*sin(βs[l])
+            # gradient wrt α[l].
+            factor1 = 𝓟mξsβ + λcβ
             term1 = diff_r*factor1
 
-            factor2 = (𝓟[n]-ξs[l])*sin(βs[l]) + λs[l]*cos(βs[l])
+            factor2 = ξm𝓟cβ + λsβ
             term2 = diff_i*factor2
 
-            df_eval[l] += (term1 + term2)*2*αs[l]/B
+            ∂𝓛_∂α_eval[l] += (term1 + term2)/B
+
+            # gradient wrt β[l].
+            factor1 = -ξm𝓟cβ - λsβ
+            term1 = diff_r*factor1
+
+            factor2 = 𝓟mξsβ + λcβ
+            term2 = diff_i*factor2
+
+            ∂𝓛_∂β_eval[l] += (term1 + term2)*αs[l]/B
         end
 
+        ∂𝓛_∂α_eval[l] = 2*∂𝓛_∂α_eval[l]
+        ∂𝓛_∂β_eval[l] = 2*∂𝓛_∂β_eval[l]
     end
 
-    return df_eval
+    # account for α := parseα(a).
+
+    resize!(∂𝓛_∂a_eval, N_pairs)
+    #fill!(∂𝓛_∂a_eval, zero(T))
+
+    for i = 1:N_pairs
+        ∂𝓛_∂a_eval[end-i+1] = ∂𝓛_∂α_eval[i] + ∂𝓛_∂α_eval[end-i+1]
+        #α_array[i] = α_values[end-i+1]
+        #α_array[end-i+1] = α_values[end-i+1]
+    end
+
+    if 2*N_pairs > L
+        # case odd.
+        ∂𝓛_∂a_eval[1] = ∂𝓛_∂α_eval[N_pairs]
+    end
+
+    return [∂𝓛_∂a_eval; ∂𝓛_∂β_eval]
+end
+
+function evalFIDFTαβcostfuncgradient(   p::Vector{T},
+                        λs::Vector{T},
+                        ξs::Vector{T},
+                        𝓟,
+                        S_𝓟::Vector{Complex{T}}) where T <: Real
+
+    # parse
+    L = length(ξs)
+    N_pairs = length(p) - L
+
+    # set up.
+    αs, βs, ∂𝓛_∂β_eval, ∂𝓛_∂α_eval, ∂𝓛_∂a_eval = setupFTFIDαβ𝓛(N_pairs, L, length(S_𝓟), one(T))
+
+    cost = evalFIDFTαβcostfuncgradient!(αs, βs, ∂𝓛_∂β_eval, ∂𝓛_∂α_eval, ∂𝓛_∂a_eval,
+                            p,
+                            λs,
+                            ξs,
+                            𝓟,
+                            S_𝓟)
+
+    return cost
 end
 
 
@@ -264,3 +346,14 @@ function imagFTFID(p, α, β::Vector{T}, λ, ξ) where T <: Real
 
     return out
 end
+# S = pp->evalFIDFT(pp, αs_oracle, β_oracle, λs, ξs)
+# Sr_AN = pp->realFTFID(pp, αs_oracle, β_oracle, λs, ξs)
+#
+# discrepancy = norm(real(S(4.5)) - Sr_AN(4.5))
+# println("real S: discrepancy = ", discrepancy)
+# println()
+#
+# Si_AN = pp->imagFTFID(pp, αs_oracle, β_oracle, λs, ξs)
+# discrepancy = norm(imag(S(4.5)) - Si_AN(4.5))
+# println("imag S: discrepancy = ", discrepancy)
+# println()

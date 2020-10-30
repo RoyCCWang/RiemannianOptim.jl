@@ -73,14 +73,25 @@ end
 
 function parseα( α_values::Vector{T}, L::Int) where T <: Real
 
+
+    α_array = Vector{T}(undef, length(α_values)*2)
+    parseα!(α_array, α_values, L)
+
+    return α_array
+end
+
+function parseα!( α_array::Vector{T},
+                    α_values::Vector{T}, L::Int) where T <: Real
+
     N_pairs = length(α_values)
     @assert 2*N_pairs == L || 2*N_pairs-1 == L
 
-    # even number of peaks.
-    α_array = Vector{T}(undef, length(α_values)*2)
     if 2*N_pairs > L
         # odd number of peaks.
         resize!(α_array, 2*N_pairs-1)
+    else
+        # even number of peaks.
+        resize!(α_array, 2*N_pairs)
     end
 
     for i = 1:N_pairs
@@ -88,9 +99,8 @@ function parseα( α_values::Vector{T}, L::Int) where T <: Real
         α_array[end-i+1] = α_values[end-i+1]
     end
 
-    return α_array
+    return nothing
 end
-
 
 
 #### the rest of this file can probably be
