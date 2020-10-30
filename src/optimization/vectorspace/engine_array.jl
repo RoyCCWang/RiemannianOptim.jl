@@ -133,6 +133,10 @@ function engineArray( f::Function,
 
     # optimize.
     while !stop_flag
+        # debug.
+        # println("n = ", n)
+        # println("x = ", x)
+        # println()
 
         # retract.
         x_CG, CG_success_flag = getCGupdateposarray!(η, f, ℜ, x, df♯_x, n, df♯_prev,

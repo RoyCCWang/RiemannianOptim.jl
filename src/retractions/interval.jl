@@ -4,9 +4,11 @@
 
 # need to think about how to get a retraction from here.
 # derivative of (t*X-b)/sqrt(a+(t*X-b)^2) with respect to t
+# ϵ cannot be too small for multiplier (v-p or p-v) to be numerically zero.
 function intervalretraction(p::T, X::T, t::T2, u, v;
-                        lower_bound = u + eps(T2)*2,
-                        upper_bound = v - eps(T2)*2)::T2 where {T <: Real, T2 <: Real}
+                        ϵ = 1e-9,
+                        lower_bound = u + ϵ,
+                        upper_bound = v - ϵ)::T2 where {T <: Real, T2 <: Real}
     @assert u < p < v
 
     q = t*X
@@ -26,8 +28,9 @@ end
 
 
 function intervalretraction(p::T, X::T, Y::T, t::T2, u, v;
-                        lower_bound = u + eps(T2)*2,
-                        upper_bound = v - eps(T2)*2)::T2 where {T <: Real, T2 <: Real}
+                        ϵ = 1e-9,
+                        lower_bound = u + ϵ,
+                        upper_bound = v - ϵ)::T2 where {T <: Real, T2 <: Real}
 
     @assert u < p < v
 
@@ -50,7 +53,8 @@ end
 function lowersimplexretraction(p::Vector{T},
                                 X::Vector{T},
                                 t::T2,
-                                v1::T)::Vector{T2} where {  T <: Real, T2 <: Real}
+                                v1::T;
+                                ϵ = 1e-9)::Vector{T2} where {  T <: Real, T2 <: Real}
     D = length(p)
     @assert D == length(X)
     @assert D > 1
@@ -58,17 +62,22 @@ function lowersimplexretraction(p::Vector{T},
     out = Vector{T2}(undef, D)
 
     out[1] = intervalretraction(p[1],
-                X[1], t, p[2], v1)
+                X[1], t, p[2], v1; ϵ = ϵ)
 
     for i = 2:D-1
 
         out[i] = intervalretraction(p[i],
-                    X[i], t, p[i+1], out[i-1])
+                    X[i], t, p[i+1], out[i-1]; ϵ = ϵ)
     end
 
     out[end] = intervalretraction(p[end],
-                X[end], t, zero(T), out[end-1])
+                X[end], t, zero(T), out[end-1]; ϵ = ϵ)
 
+    # debug.
+    # println("p = ", p)
+    # println("X = ", X)
+    # println("out = ", out)
+    # println()
     return out
 end
 
@@ -78,7 +87,8 @@ function lowersimplexretraction(p::Vector{T},
                                 X::Vector{T},
                                 Y::Vector{T},
                                 t::T2,
-                                v1::T)::Vector{T2} where {  T <: Real, T2 <: Real}
+                                v1::T;
+                                ϵ = 1e-9)::Vector{T2} where {  T <: Real, T2 <: Real}
     D = length(p)
     @assert D == length(X)
     @assert D > 1
@@ -86,16 +96,16 @@ function lowersimplexretraction(p::Vector{T},
     out = Vector{T2}(undef, D)
 
     out[1] = intervalretraction(p[1],
-                X[1], Y[1], t, p[2], v1)
+                X[1], Y[1], t, p[2], v1; ϵ = ϵ)
 
     for i = 2:D-1
 
         out[i] = intervalretraction(p[i],
-                    X[i], Y[i], t, p[i+1], out[i-1])
+                    X[i], Y[i], t, p[i+1], out[i-1]; ϵ = ϵ)
     end
 
     out[end] = intervalretraction(p[end],
-                X[end], Y[end], t, zero(T), out[end-1])
+                X[end], Y[end], t, zero(T), out[end-1]; ϵ = ϵ)
 
     return out
 end

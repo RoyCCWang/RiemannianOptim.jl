@@ -133,12 +133,13 @@ function FIDnDretraction( p::Vector{T},
                             X::Vector{T},
                             t::T2,
                             N_pairs::Int,
-                            v1)::Vector{T2} where {T <: Real, T2 <: Real}
+                            v1;
+                            ϵ = 1e-9)::Vector{T2} where {T <: Real, T2 <: Real}
     #
     α_values = p[1:N_pairs]
     β_array = p[N_pairs+1:end]
 
-    out_α = lowersimplexretraction(α_values, X[1:N_pairs], t, v1)
+    out_α = lowersimplexretraction(α_values, X[1:N_pairs], t, v1; ϵ = ϵ)
     out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], t) for i = 1:length(β_array) )
 
     return [out_α; out_β]
@@ -149,12 +150,13 @@ function FIDnDretraction( p::Vector{T},
                             Y::Vector{T},
                             t::T2,
                             N_pairs::Int,
-                            v1)::Vector{T2} where {T <: Real, T2 <: Real}
+                            v1;
+                            ϵ = 1e-9)::Vector{T2} where {T <: Real, T2 <: Real}
     #
     α_values = p[1:N_pairs]
     β_array = p[N_pairs+1:end]
 
-    out_α = lowersimplexretraction(α_values, X[1:N_pairs], Y[1:N_pairs], t, v1)
+    out_α = lowersimplexretraction(α_values, X[1:N_pairs], Y[1:N_pairs], t, v1; ϵ = ϵ)
     out_β = collect( circleretractionwithproject(β_array[i], X[N_pairs+i], Y[N_pairs+i], t) for i = 1:length(β_array) )
 
     return [out_α; out_β]
