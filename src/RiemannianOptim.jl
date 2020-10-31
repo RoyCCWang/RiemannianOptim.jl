@@ -32,7 +32,6 @@ include("../src/problems/FID_persist.jl")
 include("../src/frontends/FID_FT.jl")
 include("../src/frontends/FID_DTFT.jl")
 include("../src/frontends/RKHS.jl")
-include("../src/frontends/FID_FT.jl")
 include("../src/frontends/FID_DTFT.jl")
 
 export OptimizationConfigType,
@@ -47,6 +46,6 @@ export OptimizationConfigType,
 
         # front_ends.
         solveRKHSℝpproblem,
-        solveFIDFTαβproblem
+        solveFIDFTαβproblemhybrid
 
 end # module

@@ -154,7 +154,7 @@ p_initial = [α_values_initial; β_initial]
 #
 # max_iters_RMO = [100; 100; 100]
 
-N_epochs = 30
+N_epochs = 30 #2
 
 max_iters_PSO = 300 .* ones(Int, N_epochs)
 N_particles = 6 .* ones(Int, N_epochs)
