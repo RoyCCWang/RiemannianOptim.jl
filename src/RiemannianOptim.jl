@@ -33,6 +33,7 @@ include("../src/frontends/FID_FT.jl")
 include("../src/frontends/FID_DTFT.jl")
 include("../src/frontends/RKHS.jl")
 include("../src/frontends/FID_DTFT.jl")
+include("../src/problems/FID_phase_helpers.jl")
 
 export OptimizationConfigType,
         TrustRegionConfigType,
