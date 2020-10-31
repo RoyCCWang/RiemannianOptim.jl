@@ -58,9 +58,13 @@ fig_num = 1
 # N_pairs = 55
 # L = 110
 
-## problematic case if no PSO.
+# ## problematic case if no PSO.
+# N_pairs = 6
+# L = 11
+
+
 N_pairs = 6
-L = 11
+L = 12
 
 # # odd L.
 # N_pairs = 4
@@ -177,7 +181,8 @@ println()
 
 ### retraction settings.
 #α_max = 500.0
-α_max = 10.0
+#α_max = 10.0
+α_max = maximum(α_values_oracle) .* 1.2
 ϵ_retraction = 1e-9 # for intervalretraction.
 
 # initial guess.
@@ -254,7 +259,7 @@ println()
 
 # Riemmian optim parameters.
 verbose_flag = true
-minimum_TR_radius = 1e-3
+minimum_TR_radius = 1e-4
 
 #max_iters_RMO = 5000
 max_iters_RMO = 100
@@ -299,7 +304,3 @@ println()
 
 
 # TODO play with the riemannian metric for α and β.
-
-
-
-# hybrid between PSO and Riemannian manifold optimization.
