@@ -74,10 +74,20 @@ function lowersimplexretraction(p::Vector{T},
                 X[end], t, zero(T), out[end-1]; ϵ = ϵ)
 
     # debug.
-    println("p = ", p)
-    println("X = ", X)
-    println("out = ", out)
-    println()
+    ok_flag = falses(D)
+    ok_flag[1] = (out[2] < out[1] < v1)
+    for i = 2:D-1
+        ok_flag[i] = (out[i+1] < out[i] < out[i-1])
+    end
+    ok_flag[D] = (0 < out[end] < out[end-1])
+
+    if !ok_flag
+        println("p = ", p)
+        println("X = ", X)
+        println("out = ", out)
+        println()
+    end
+
     return out
 end
 
