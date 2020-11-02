@@ -71,7 +71,11 @@ function lowersimplexretraction(p::Vector{T},
         println("p = ", p)
         println("X = ", X)
         #println("out = ", out)
+        println("v1 = ", v1)
+        println("ϵ = ", ϵ)
+        println("ok_flag = ", ok_flag)
         println()
+        @assert 1==2
     end
 
     out = Vector{T2}(undef, D)
@@ -100,7 +104,11 @@ function lowersimplexretraction(p::Vector{T},
         println("p = ", p)
         println("X = ", X)
         println("out = ", out)
+        println("v1 = ", v1)
+        println("ϵ = ", ϵ)
+        println("ok_flag = ", ok_flag)
         println()
+        @assert 3==4
     end
 
     return out
