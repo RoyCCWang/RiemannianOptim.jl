@@ -59,6 +59,21 @@ function lowersimplexretraction(p::Vector{T},
     @assert D == length(X)
     @assert D > 1
 
+    # debug.
+    ok_flag = falses(D)
+    ok_flag[1] = (p[2] < p[1] < v1)
+    for i = 2:D-1
+        ok_flag[i] = (p[i+1] < p[i] < p[i-1])
+    end
+    ok_flag[D] = (0 < p[end] < p[end-1])
+
+    if !all(ok_flag)
+        println("p = ", p)
+        println("X = ", X)
+        #println("out = ", out)
+        println()
+    end
+
     out = Vector{T2}(undef, D)
 
     out[1] = intervalretraction(p[1],
