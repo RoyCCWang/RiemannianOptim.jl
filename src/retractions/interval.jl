@@ -81,7 +81,7 @@ function lowersimplexretraction(p::Vector{T},
     end
     ok_flag[D] = (0 < out[end] < out[end-1])
 
-    if !ok_flag
+    if !all(ok_flag)
         println("p = ", p)
         println("X = ", X)
         println("out = ", out)
