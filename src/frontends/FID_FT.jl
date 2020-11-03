@@ -97,8 +97,9 @@ function solveFIDFTαβproblemRMO( ξs::Vector{T},
                             avg_Δf_window = 10,
                             max_idle_update_count = 50,
                             g::Function = pp->one(T), # use Euclidean metric.
-                            𝑟 = 1e-2,
-                            ϵ_retraction = 1e-9) where T <: Real
+                            𝑟::T = 1e-2,
+                            ϵ_retraction::T = 1e-9,
+                            debug_mode::Bool = false) where T <: Real
 
     # set up.
     L = length(β_initial)
@@ -133,7 +134,9 @@ function solveFIDFTαβproblemRMO( ξs::Vector{T},
                   X::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, t, N_pairs, α_max;
+                    ϵ = ϵ_retraction,
+                    debug_mode = debug_mode)
       end
 
       function ℜnD( p::Vector{T},
@@ -141,7 +144,9 @@ function solveFIDFTαβproblemRMO( ξs::Vector{T},
                   Y::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, Y, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, Y, t, N_pairs, α_max;
+                    ϵ = ϵ_retraction,
+                    debug_mode = debug_mode)
       end
 
       function ℜ1D( p::Vector{T},
@@ -205,7 +210,8 @@ function solveFIDFTαβproblemPSO( ξs::Vector{T},
                             β_initial::Vector{T};
                             max_iters_PSO::Int = 90,
                             N_particles = 3,
-                            ϵ_retraction = 1e-9) where T <: Real
+                            ϵ_retraction = 1e-9,
+                            debug_mode::Bool = false) where T <: Real
 
     # set up.
     L = length(β_initial)
@@ -224,7 +230,9 @@ function solveFIDFTαβproblemPSO( ξs::Vector{T},
                   X::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, t, N_pairs, α_max;
+                            ϵ = ϵ_retraction,
+                            debug_mode = debug_mode)
       end
 
       function ℜnD( p::Vector{T},
@@ -232,7 +240,9 @@ function solveFIDFTαβproblemPSO( ξs::Vector{T},
                   Y::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, Y, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, Y, t, N_pairs, α_max;
+                        ϵ = ϵ_retraction,
+                        debug_mode = debug_mode)
       end
 
       function ℜ1D( p::Vector{T},
@@ -305,8 +315,9 @@ function solveFIDFTαβproblemhybrid( ξs::Vector{T},
                             avg_Δf_window = 10,
                             max_idle_update_count = 50,
                             g::Function = pp->one(T), # use Euclidean metric.
-                            𝑟 = 1e-2,
-                            ϵ_retraction = 1e-9) where T <: Real
+                            𝑟::T = 1e-2,
+                            ϵ_retraction::T = 1e-9,
+                            debug_mode::Bool = false) where T <: Real
 
     # set up.
     L = length(β_initial)
@@ -341,7 +352,9 @@ function solveFIDFTαβproblemhybrid( ξs::Vector{T},
                   X::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, t, N_pairs, α_max;
+                        ϵ = ϵ_retraction,
+                        debug_mode = debug_mode)
       end
 
       function ℜnD( p::Vector{T},
@@ -349,7 +362,9 @@ function solveFIDFTαβproblemhybrid( ξs::Vector{T},
                   Y::Vector{T},
                   t::T2)::Vector{T2} where {T <: Real, T2 <: Real}
 
-          return FIDnDretraction(p, X, Y, t, N_pairs, α_max; ϵ = ϵ_retraction)
+          return FIDnDretraction(p, X, Y, t, N_pairs, α_max;
+                            ϵ = ϵ_retraction,
+                            debug_mode = debug_mode)
       end
 
       function ℜ1D( p::Vector{T},
