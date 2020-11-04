@@ -71,7 +71,7 @@ function lowersimplexretractiondebug(p, X, v1::T, ϵ::T) where T
     end
 end
 
-function lowersimplexretractiondebug(p, X, v1::T, ϵ::T, out::Vector{T}) where T
+function lowersimplexretractiondebug(p, X, v1::T, ϵ::T, out) where T
     D = length(p)
 
     ok_flag = falses(D)
@@ -150,7 +150,7 @@ function lowersimplexretraction(p::Vector{T},
     if debug_mode
         lowersimplexretractiondebug(p, X, v1, ϵ)
     end
-    
+
     out = Vector{T2}(undef, D)
 
     out[1] = intervalretraction(p[1],
