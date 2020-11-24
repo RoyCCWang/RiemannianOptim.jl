@@ -27,7 +27,6 @@ function evalcomplexLorentzian(u, α, β::T, λ, Ω)::Complex{T} where T <: Real
     return α*exp(im*β)/(λ + im*(2*π*u - Ω))
 end
 
-# methods related to the Fourier transform of FID.
 function evalcomplexLorentzian(u, αs, βs::Vector{T}, λ, Ωs)::Complex{T} where T <: Real
     L = length(βs)
     @assert L == length(βs) == length(Ωs)

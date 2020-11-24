@@ -22,7 +22,7 @@ import BSON
 #include("../src/problems/FID_helpers.jl")
 #include("../src/problems/FID_persist.jl")
 
-include("../src/problems/complex_lorentzian_phase_helpers.jl")
+
 
 include("../src/declarations.jl")
 
@@ -46,7 +46,7 @@ include("../src/frontends/FID_DTFT.jl")
 
 include("../src/frontends/RKHS.jl")
 include("../src/frontends/complex_lorentzian.jl")
-#include("../src/frontends/FID_DTFT.jl")
+include("../src/problems/complex_lorentzian_phase_helpers.jl")
 
 PyPlot.close("all")
 

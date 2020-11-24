@@ -35,6 +35,7 @@ include("../src/frontends/RKHS.jl")
 #include("../src/frontends/FID_DTFT.jl")
 #include("../src/problems/FID_phase_helpers.jl")
 include("../src/frontends/complex_lorentzian.jl")
+include("../src/problems/complex_lorentzian_phase_helpers.jl")
 
 export OptimizationConfigType,
         TrustRegionConfigType,
