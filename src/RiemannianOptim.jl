@@ -25,15 +25,15 @@ include("../src/optimization/TRS/trustregion.jl")
 include("../src/optimization/TRS/trhelpers.jl")
 
 include("../src/problems/RKHS_positive_coefficients.jl")
-include("../src/problems/FID_helpers.jl")
-include("../src/problems/FID_persist.jl")
+#include("../src/problems/FID_helpers.jl")
+#include("../src/problems/FID_persist.jl")
 
 #include("../src/frontends/RKHS.jl")
-include("../src/frontends/FID_FT.jl")
-include("../src/frontends/FID_DTFT.jl")
+#include("../src/frontends/FID_FT.jl")
+#include("../src/frontends/FID_DTFT.jl")
 include("../src/frontends/RKHS.jl")
-include("../src/frontends/FID_DTFT.jl")
-include("../src/problems/FID_phase_helpers.jl")
+#include("../src/frontends/FID_DTFT.jl")
+#include("../src/problems/FID_phase_helpers.jl")
 include("../src/frontends/complex_lorentzian.jl")
 
 export OptimizationConfigType,
