@@ -34,6 +34,7 @@ include("../src/frontends/FID_DTFT.jl")
 include("../src/frontends/RKHS.jl")
 include("../src/frontends/FID_DTFT.jl")
 include("../src/problems/FID_phase_helpers.jl")
+include("../src/frontends/complex_lorentzian.jl")
 
 export OptimizationConfigType,
         TrustRegionConfigType,
@@ -47,6 +48,7 @@ export OptimizationConfigType,
 
         # front_ends.
         solveRKHSℝpproblem,
-        solveFIDFTαβproblemhybrid
+        solveFIDFTαβproblemhybrid,
+        solvecLβproblem
 
 end # module
