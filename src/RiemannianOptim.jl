@@ -50,6 +50,7 @@ export OptimizationConfigType,
         # front_ends.
         solveRKHSℝpproblem,
         solveFIDFTαβproblemhybrid,
-        solvecLβproblem
+        solvecLβproblem,
+        solvecLβproblemPSO
 
 end # module

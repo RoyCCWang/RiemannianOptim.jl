@@ -79,3 +79,61 @@ function solvecLβproblem( Ωs::Vector{T},
     #
     return p_star, f_p_array, norm_df_array, num_iters
 end
+
+
+function solvecLβproblemPSO( Ωs::Vector{T},
+                            λ::T,
+                            αs::Vector{T},
+                            S_U::Vector{Complex{T}},
+                            U,
+                            β_initial::Vector{T};
+                            max_iters_PSO::Int = 90,
+                            N_epochs::Int = 3,
+                            N_particles = 3,
+                            ϵ_retraction = 1e-9,
+                            verbose_flag::Bool = false) where T <: Real
+
+    # set up.
+    L = length(β_initial)
+    @assert length(Ωs) == L == length(αs)
+
+    # prepare initial guess.
+    N_vars = length(β_initial)
+
+    # set up cost function.
+    f = bb->evalcLβcostfunc(bb, αs, λ, Ωs, U, S_U)
+
+    # retraction.
+    ℜ = circleretractionwithproject
+
+    # set up PSO's objective function.
+    p_persist = copy(β_initial)
+    costfunc = XX->f(ℜ(p_persist, XX, one(T)))
+
+    # initial guess.
+    x0 = zeros(T, length(β_initial))
+
+    for n = 1:N_epochs
+
+        # initial guess is all zeros.
+        fill!(x0, zero(T))
+
+        # optimize for the tangent vector that yields the least cost.
+        # Unconstrained optimization.
+        op = Optim.Options( iterations = max_iters_PSO,
+                                 store_trace = false,
+                                 show_trace = verbose_flag)
+
+        swarm = Optim.ParticleSwarm(; lower = [],
+                        upper = [],
+                        n_particles = N_particles)
+        #
+        results = Optim.optimize(costfunc,
+                        x0, swarm, op)
+
+        x_star = results.minimizer
+        p_persist[:] = ℜ(p_persist, x_star, one(T))
+    end
+
+    return p_persist
+end

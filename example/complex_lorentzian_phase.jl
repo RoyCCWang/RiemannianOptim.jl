@@ -179,6 +179,7 @@ max_iter = 500
 minimum_TR_radius = 1e-6
 
 # solve.
+println("Timing: RMO")
 @time p_star, f_p_array, norm_df_array,
         num_iters = solvecLβproblem( Ωs,
                         λ,
@@ -207,3 +208,33 @@ PyPlot.plot(collect(1:num_iters), log.(f_p_array))
 
 title_string = "log f(p) history vs. iterations"
 PyPlot.title(title_string)
+
+
+
+### PSO.
+max_iters_PSO = 250
+N_epochs = 2
+N_particles = 3
+ϵ_retraction = 1e-9
+verbose_flag = false
+
+println("Timing: PSO")
+@time p_star_PSO = solvecLβproblemPSO( Ωs,
+                        λ,
+                        αs,
+                        S_U,
+                        U,
+                        β_initial;
+                        max_iters_PSO = max_iters_PSO,
+                        N_epochs = N_epochs,
+                        N_particles = N_particles,
+                        ϵ_retraction = ϵ_retraction,
+                        verbose_flag = verbose_flag)
+
+#
+discrepancy = norm(p_oracle-p_star_PSO)
+println("PSO:")
+println("discrepancy between oracle and the solution: ", discrepancy)
+println("[p_oracle p_star_PSO]:")
+display([p_oracle p_star_PSO])
+println()
