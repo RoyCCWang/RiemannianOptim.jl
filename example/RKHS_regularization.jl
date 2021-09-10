@@ -5,12 +5,7 @@
 import Random
 import PyPlot
 import Printf
-# import Statistics
-# import SpecialFunctions
-# import Calculus
-# import ForwardDiff
-# import Optim
-# using LinearAlgebra
+using LinearAlgebra
 import BSON
 
 # include("../src/declarations.jl")
@@ -29,8 +24,8 @@ import BSON
 #
 # include("../src/problems/RKHS_positive_coefficients.jl")
 
-#include("../src/RiemannianOptim.jl")
-using RiemannianOptim
+
+import RiemannianOptim
 
 PyPlot.close("all")
 
@@ -49,9 +44,9 @@ K = data[:K]
 
 α_SDP = data[:α_SDP] # this is the oracle solution.
 
-f = aa->RKHSfitdensitycostfunc(aa, K, y, μ)
-df_Euc = aa->gradientRKHSfitdensitycostfunc(y, K, μ, aa)
-H = gethessianRKHSfitdensitycostfunc(y, K, μ)
+f = aa->RiemannianOptim.RKHSfitdensitycostfunc(aa, K, y, μ)
+df_Euc = aa->RiemannianOptim.gradientRKHSfitdensitycostfunc(y, K, μ, aa)
+H = RiemannianOptim.gethessianRKHSfitdensitycostfunc(y, K, μ)
 #fill!(H, 0.0) # force H to not be posdef. This triggers a Hessain approximnation in the engine.
 
 # ## Euclidean metric.
@@ -75,7 +70,7 @@ verbose_flag = false #  false
 max_iter_tCG = 100
 ρ_lower_acceptance = 0.2 # recommended to be less than 0.25
 ρ_upper_acceptance = 5.0
-TR_config = TrustRegionConfigType(  1e-3,
+TR_config = RiemannianOptim.TrustRegionConfigType(  1e-3,
                                     10.0,
                                     max_iter_tCG,
                                     verbose_flag,
@@ -88,7 +83,7 @@ avg_Δf_tol = 0.0 #1e-12 #1e-5
 avg_Δf_window = 10
 max_idle_update_count = 50
 𝑟 = 1e-2
-opt_config = OptimizationConfigType( max_iter,
+opt_config = RiemannianOptim.OptimizationConfigType( max_iter,
                                         verbose_flag,
                                         norm_df_tol,
                                         objective_tol,
@@ -100,9 +95,9 @@ opt_config = OptimizationConfigType( max_iter,
 # TODO get this retraction lower bound sorted out.
 #retraction_lower_bound = 1e-10
 #ℜ =  xx->ℝ₊₊arrayexpquadraticretraction(xx...; lower_bound = retraction_lower_bound)
-ℜ = ℝ₊₊arrayexpquadraticretraction
+ℜ = RiemannianOptim.ℝ₊₊arrayexpquadraticretraction
 @time α_star, f_α_array, norm_df_array,
-    num_iters = engineArray(    f,
+    num_iters = RiemannianOptim.engineArray(    f,
                                 df_Euc,
                                 α_initial,
                                 copy(α_initial),
