@@ -5,38 +5,32 @@
 import Random
 import PyPlot
 import Printf
-
-
-import Statistics
-import SpecialFunctions
-
-import Calculus
-import ForwardDiff
-
-import Optim
-
-using LinearAlgebra
-
+# import Statistics
+# import SpecialFunctions
+# import Calculus
+# import ForwardDiff
+# import Optim
+# using LinearAlgebra
 import BSON
 
+# include("../src/declarations.jl")
+#
+# include("../src/retractions/Rp.jl")
+#
+# include("../src/manifold/vector_transport.jl")
+#
+# include("../src/optimization/CG.jl")
+#
+# #include("../src/optimization/Rp/engine_Rp.jl")
+# include("../src/optimization/vectorspace/engine_array.jl")
+#
+# include("../src/optimization/TRS/trustregion.jl")
+# include("../src/optimization/TRS/trhelpers.jl")
+#
+# include("../src/problems/RKHS_positive_coefficients.jl")
 
-include("../src/declarations.jl")
-
-
-
-include("../src/retractions/Rp.jl")
-
-include("../src/manifold/vector_transport.jl")
-
-include("../src/optimization/CG.jl")
-
-#include("../src/optimization/Rp/engine_Rp.jl")
-include("../src/optimization/vectorspace/engine_array.jl")
-
-include("../src/optimization/TRS/trustregion.jl")
-include("../src/optimization/TRS/trhelpers.jl")
-
-include("../src/problems/RKHS_positive_coefficients.jl")
+#include("../src/RiemannianOptim.jl")
+using RiemannianOptim
 
 PyPlot.close("all")
 
