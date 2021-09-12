@@ -33,6 +33,8 @@ The trust-region subproblem for this optimization problem is investigated in ```
 Background material for numerical optimization on Riemannian manifolds are available in [1-2].
 
 # Future direction
+Further develop RKHS_regularization.jl in the example folder into a useful tool for density estimation using RKHS theory.
+
 General cost functions over the space of positive real numbers, and general cost function over the space of the parameters of a multivariate normal distribution (mean, covariance matrix) will be tested.
 
 Extensions of the non-gradient / heuristic search methods reported in [2] will be explored, if a particularly troublesome cost function with multiple modes is to be implemented.
