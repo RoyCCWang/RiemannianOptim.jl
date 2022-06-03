@@ -24,8 +24,8 @@ import BSON
 #
 # include("../src/problems/RKHS_positive_coefficients.jl")
 
-
-import RiemannianOptim
+include("../src/RiemannianOptim.jl")
+import .RiemannianOptim
 
 PyPlot.close("all")
 
@@ -65,7 +65,7 @@ g = pp->1.0/(dot(pp,pp)+1.0)
 α_initial = ones(Float64, length(y))
 
 ## optimization configuration.
-max_iter = 1600 #400
+max_iter = 1600 # 400
 verbose_flag = false #  false
 max_iter_tCG = 100
 ρ_lower_acceptance = 0.2 # recommended to be less than 0.25

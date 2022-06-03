@@ -1,7 +1,7 @@
 
 
 
-function solveRKHSℝpproblem(y::Vector{T},
+function solveRKHSdensitypproblem(y::Vector{T},
                             K::Matrix{T},
                             μ::T;
                             H::Matrix{T} = gethessianRKHSfitdensitycostfunc(y, K, μ),

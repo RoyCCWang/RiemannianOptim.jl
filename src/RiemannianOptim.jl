@@ -48,7 +48,7 @@ export OptimizationConfigType,
         projectcircle,
 
         # front_ends.
-        solveRKHSℝpproblem,
+        solveRKHSdensitypproblem,
         solveFIDFTαβproblemhybrid,
         solvecLβproblem,
         solvecLβproblemPSO
